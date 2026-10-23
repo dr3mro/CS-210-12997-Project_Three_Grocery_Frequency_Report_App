@@ -20,12 +20,15 @@ if(NOT GROCERY_CMAKE_LINT)
     return()
 endif()
 
-# The files are globbed by the script at build time, so file discovery does not
-# become a configure dependency for Ninja's glob verifier.
+# This is an optional lint target, so its file discovery must not become a
+# configure dependency for Ninja's glob verifier.
+file(GLOB _grocery_cmake_files
+    "${PROJECT_SOURCE_DIR}/CMakeLists.txt"
+    "${PROJECT_SOURCE_DIR}/*/CMakeLists.txt"
+    "${PROJECT_SOURCE_DIR}/cmake/*.cmake"
+    "${PROJECT_SOURCE_DIR}/cmake/*.cmake.in")
 add_custom_target(cmake-lint
-    COMMAND ${CMAKE_COMMAND}
-        -DGROCERY_CMAKE_LINT=${GROCERY_CMAKE_LINT}
-        -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
-        -P "${PROJECT_SOURCE_DIR}/cmake/RunCMakeLint.cmake"
+    COMMAND "${GROCERY_CMAKE_LINT}" ${_grocery_cmake_files}
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     COMMENT "Linting CMake files with cmake-lint"
     VERBATIM)
