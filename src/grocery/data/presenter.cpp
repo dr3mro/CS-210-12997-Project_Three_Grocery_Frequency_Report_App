@@ -81,7 +81,8 @@ namespace grocery::data
         {
             // Align the item name, bar, and numeric count for easy comparison.
             result << std::setw(HISTOGRAM_NAME_WIDTH) << std::left << item.first << std::setw(COUNT_WIDTH) << std::right << std::setw(BAR_WIDTH) << std::right
-                   << std::string(item.second, BAR_FILL) << SPACE << std::left << "[" << std::setw(2) << std::right << item.second << "] ";
+                   << std::string(static_cast<std::size_t>(item.second), BAR_FILL) << SPACE << std::left << "[" << std::setw(2) << std::right << item.second
+                   << "] ";
             result << std::endl;
         }
 

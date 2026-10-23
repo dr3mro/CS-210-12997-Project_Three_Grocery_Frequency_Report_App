@@ -68,7 +68,6 @@
  */
 
 #include "include/grocery/app/controller.hpp"
-
 #include <grocery/version.hpp>
 
 #include <iostream>
