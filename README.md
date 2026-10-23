@@ -227,25 +227,6 @@ serialized frequency report produced from the in-memory grocery store.
     └── docs.yml              GitHub Pages documentation workflow
 ```
 
-## Design diagrams
-
-The project includes a flowchart of the application workflow and a class
-design diagram showing the major classes and their relationships.
-
-### Application flowchart
-
-![Grocery application flowchart](diagrams/grocery_flowchart.png)
-
-### Class design diagram
-
-![Grocery class design diagram](diagrams/grocery_class_diagram.png)
-
-The PNG files can be regenerated from their Graphviz source files with:
-
-```bash
-make diagrams
-```
-
 ## Documentation
 
 Generate the HTML documentation locally with:
