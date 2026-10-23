@@ -19,8 +19,8 @@ namespace
 
 TEST_CASE("DataController::Instance returns the same singleton")
 {
-    auto& first = grocery::data::DataController::Instance();
-    auto& second = grocery::data::DataController::Instance();
+    const auto& first = grocery::data::DataController::Instance();
+    const auto& second = grocery::data::DataController::Instance();
 
     CHECK(&first == &second);
 }
@@ -28,7 +28,7 @@ TEST_CASE("DataController::Instance returns the same singleton")
 TEST_CASE("DataController loads items from a file")
 {
     auto& controller = freshController();
-    auto input = temporaryPath("controller_input.txt");
+    const auto input = temporaryPath("controller_input.txt");
     writeTextFile(input, "Milk\nBread\nMilk\n");
 
     controller.LoadData(input.string());
@@ -42,8 +42,8 @@ TEST_CASE("DataController loads items from a file")
 TEST_CASE("DataController adds loaded items to existing data")
 {
     auto& controller = freshController();
-    auto first = temporaryPath("controller_first.txt");
-    auto second = temporaryPath("controller_second.txt");
+    const auto first = temporaryPath("controller_first.txt");
+    const auto second = temporaryPath("controller_second.txt");
     writeTextFile(first, "Milk\n");
     writeTextFile(second, "Milk\nEggs\n");
 
@@ -59,8 +59,8 @@ TEST_CASE("DataController adds loaded items to existing data")
 
 TEST_CASE("DataController saves the current store to a file")
 {
-    auto& controller = freshController();
-    auto output = temporaryPath("controller_output.dat");
+    const auto& controller = freshController();
+    const auto output = temporaryPath("controller_output.dat");
     grocery::data::KVStore::Instance().addItem("Milk");
     grocery::data::KVStore::Instance().addItem("Milk");
     grocery::data::KVStore::Instance().addItem("Apple");
@@ -74,7 +74,7 @@ TEST_CASE("DataController saves the current store to a file")
 
 TEST_CASE("DataController finds stored items")
 {
-    auto& controller = freshController();
+    const auto& controller = freshController();
     grocery::data::KVStore::Instance().addItem("Milk");
     grocery::data::KVStore::Instance().addItem("Milk");
 
@@ -84,18 +84,18 @@ TEST_CASE("DataController finds stored items")
 
 TEST_CASE("DataController reports missing items as not found")
 {
-    auto& controller = freshController();
+    const auto& controller = freshController();
 
     CHECK(controller.FindItem("Bread") == "Bread: Not found");
 }
 
 TEST_CASE("DataController lists items with quantities")
 {
-    auto& controller = freshController();
+    const auto& controller = freshController();
     grocery::data::KVStore::Instance().addItem("Milk");
     grocery::data::KVStore::Instance().addItem("Apple");
 
-    auto listing = controller.ListItemsWithQuantities();
+    const auto listing = controller.ListItemsWithQuantities();
 
     CHECK(listing.find("Items with Quantities") != std::string::npos);
     CHECK(listing.find("Apple") != std::string::npos);
@@ -104,11 +104,11 @@ TEST_CASE("DataController lists items with quantities")
 
 TEST_CASE("DataController builds a histogram")
 {
-    auto& controller = freshController();
+    const auto& controller = freshController();
     grocery::data::KVStore::Instance().addItem("Milk");
     grocery::data::KVStore::Instance().addItem("Milk");
 
-    auto histogram = controller.GetItemsHistogram();
+    const auto histogram = controller.GetItemsHistogram();
 
     CHECK(histogram.find("Items Histogram") != std::string::npos);
     CHECK(histogram.find("Milk") != std::string::npos);

@@ -10,7 +10,7 @@ using grocery::test::CoutCapture;
 
 TEST_CASE("Item exposes its display text")
 {
-    grocery::ui::Item item("find an item.", [] {});
+    const grocery::ui::Item item("find an item.", [] {});
 
     CHECK(item.GetText() == "find an item.");
 }
@@ -18,7 +18,7 @@ TEST_CASE("Item exposes its display text")
 TEST_CASE("Item executes its action")
 {
     bool executed = false;
-    grocery::ui::Item item("run", [&executed] { executed = true; });
+    const grocery::ui::Item item("run", [&executed] { executed = true; });
 
     item.ExecuteAction();
 
@@ -27,14 +27,14 @@ TEST_CASE("Item executes its action")
 
 TEST_CASE("Item throws when its action is empty")
 {
-    grocery::ui::Item item("empty", std::function<void()>{});
+    const grocery::ui::Item item("empty", std::function<void()>{});
 
     CHECK_THROWS_AS(item.ExecuteAction(), std::invalid_argument);
 }
 
 TEST_CASE("Item prints its number and text")
 {
-    grocery::ui::Item item("list items.", [] {});
+    const grocery::ui::Item item("list items.", [] {});
     CoutCapture output;
 
     item.PrintItem();
@@ -45,7 +45,7 @@ TEST_CASE("Item prints its number and text")
 
 TEST_CASE("Item numbering increases for each created item")
 {
-    grocery::ui::Item first("first", [] {});
+    const grocery::ui::Item first("first", [] {});
     std::string firstOutput;
     {
         CoutCapture output;
@@ -53,7 +53,7 @@ TEST_CASE("Item numbering increases for each created item")
         firstOutput = output.str();
     }
 
-    grocery::ui::Item second("second", [] {});
+    const grocery::ui::Item second("second", [] {});
     CoutCapture output;
     second.PrintItem();
 

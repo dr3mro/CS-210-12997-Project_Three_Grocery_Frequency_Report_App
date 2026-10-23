@@ -36,7 +36,7 @@ namespace grocery::ui
                 break;
             }
 
-            std::string result = dataController.FindItem(itemName);
+            const std::string result = dataController.FindItem(itemName);
             // Print the already-formatted result without duplicating presentation
             // rules.
             std::cout << result << std::endl;
@@ -51,7 +51,7 @@ namespace grocery::ui
      */
     void Dialog::ListItemsWithQuantities()
     {
-        std::string result = dataController.ListItemsWithQuantities();
+        const std::string result = dataController.ListItemsWithQuantities();
         std::cout << result;
 
         // Pause so the user can read the report before the menu is redrawn.
@@ -66,7 +66,7 @@ namespace grocery::ui
      */
     void Dialog::PrintHistogram()
     {
-        std::string result = dataController.GetItemsHistogram();
+        const std::string result = dataController.GetItemsHistogram();
         std::cout << result;
 
         // Pause for the same reason as the table dialog.

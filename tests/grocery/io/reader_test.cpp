@@ -11,7 +11,7 @@ using grocery::test::writeTextFile;
 TEST_CASE("Reader reads a complete file line by line")
 {
     grocery::io::Reader reader;
-    auto file = temporaryPath("reader_input.txt");
+    const auto file = temporaryPath("reader_input.txt");
     writeTextFile(file, "Milk\nBread\nEggs\n");
 
     std::string data;
@@ -25,7 +25,7 @@ TEST_CASE("Reader reads a complete file line by line")
 TEST_CASE("Reader appends to the destination string")
 {
     grocery::io::Reader reader;
-    auto file = temporaryPath("reader_append.txt");
+    const auto file = temporaryPath("reader_append.txt");
     writeTextFile(file, "Milk\n");
 
     std::string data = "existing:";
@@ -39,7 +39,7 @@ TEST_CASE("Reader appends to the destination string")
 TEST_CASE("Reader leaves the destination unchanged for an empty file")
 {
     grocery::io::Reader reader;
-    auto file = temporaryPath("reader_empty.txt");
+    const auto file = temporaryPath("reader_empty.txt");
     writeTextFile(file, "");
 
     std::string data = "existing";
@@ -53,7 +53,7 @@ TEST_CASE("Reader leaves the destination unchanged for an empty file")
 TEST_CASE("Reader preserves blank lines")
 {
     grocery::io::Reader reader;
-    auto file = temporaryPath("reader_blank.txt");
+    const auto file = temporaryPath("reader_blank.txt");
     writeTextFile(file, "Milk\n\nBread\n");
 
     std::string data;
@@ -67,7 +67,7 @@ TEST_CASE("Reader preserves blank lines")
 TEST_CASE("Reader throws when a file cannot be opened")
 {
     grocery::io::Reader reader;
-    auto missing = temporaryPath("reader_missing.txt");
+    const auto missing = temporaryPath("reader_missing.txt");
 
     std::string data;
     CHECK_THROWS_AS(reader.Read(missing.string(), data), std::runtime_error);

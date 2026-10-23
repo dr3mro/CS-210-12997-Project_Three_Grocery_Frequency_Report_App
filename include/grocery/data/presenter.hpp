@@ -37,6 +37,7 @@ namespace grocery::data
          * @param quantity Item count.
          * @return Formatted quantity text, or a not-found message for zero.
          */
+        // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         std::string FormatItemWithQuantity(const std::string& item, int quantity) const;
 
         /**
@@ -44,6 +45,7 @@ namespace grocery::data
          * @param items Items and their counts.
          * @return Formatted table text.
          */
+        // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         std::string FormatItemsWithQuantities(const std::map<std::string, int>& items) const;
 
         /**
@@ -51,6 +53,7 @@ namespace grocery::data
          * @param items Items and their counts.
          * @return Formatted histogram text.
          */
+        // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         std::string FormatItemsHistogram(const std::map<std::string, int>& items) const;
 
     }; // class DataPresenter

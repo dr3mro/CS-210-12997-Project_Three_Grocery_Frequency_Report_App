@@ -51,7 +51,7 @@ namespace grocery::data
      */
     std::string DataController::FindItem(const std::string& key) const
     {
-        auto item = kvStore.getItem(key);
+        const auto item = kvStore.getItem(key);
         std::string result{};
         if (item == kvStore.end())
         {
@@ -73,7 +73,7 @@ namespace grocery::data
     std::string DataController::ListItemsWithQuantities() const
     {
         // Presenters receive copies rather than direct access to the shared store.
-        auto items = kvStore.getItemsWithQuantaties();
+        const auto items = kvStore.getItemsWithQuantaties();
         return presenter.FormatItemsWithQuantities(items);
     }
 
@@ -84,7 +84,7 @@ namespace grocery::data
     std::string DataController::GetItemsHistogram() const
     {
         // Both display modes use the same current frequency snapshot.
-        auto items = kvStore.getItemsWithQuantaties();
+        const auto items = kvStore.getItemsWithQuantaties();
         return presenter.FormatItemsHistogram(items);
     }
 } // namespace grocery::data

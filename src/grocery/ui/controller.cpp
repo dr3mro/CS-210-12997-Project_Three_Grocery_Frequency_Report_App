@@ -32,24 +32,24 @@ namespace grocery::ui
     void UIController::CreateMenu()
     {
         // Each callback captures this controller so it can invoke its dialog.
-        menu.addItem("find an item.", [this]()
+        menu.addItem("find an item.", [this]
         {
             // Delegate the lookup loop to the dialog layer.
             dialog.FindItem();
         });
-        menu.addItem("list items and quantaties.", [this]()
+        menu.addItem("list items and quantaties.", [this]
         {
             // Display the tabular report through the dialog layer.
             dialog.ListItemsWithQuantities();
         });
-        menu.addItem("print a histogram.", [this]()
+        menu.addItem("print a histogram.", [this]
         {
             // Display the frequency bars through the dialog layer.
             dialog.PrintHistogram();
         });
 
         // Exit does not need controller state, so it uses a non-capturing callback.
-        menu.addItem("exit.", []()
+        menu.addItem("exit.", []
         {
             std::cout << "Exiting the program.\n";
             exit(0);
@@ -81,7 +81,7 @@ namespace grocery::ui
             if (!std::getline(std::cin, input))
             {
                 keepRunning = false;
-                break;
+                continue;
             }
 
             // A letter command bypasses numeric parsing and requests exit.
@@ -89,7 +89,7 @@ namespace grocery::ui
             {
                 std::cout << "Exiting the program.\n";
                 keepRunning = false;
-                break;
+                continue;
             }
 
             std::istringstream inputStream(input);
@@ -104,7 +104,7 @@ namespace grocery::ui
             }
             // Convert the user's one-based choice into the menu's zero-based index.
 
-            auto* item = menu.getItem(choice - 1);
+            const auto* item = menu.getItem(choice - 1);
             if (item != nullptr)
             {
                 try

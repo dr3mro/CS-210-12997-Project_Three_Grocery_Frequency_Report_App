@@ -16,6 +16,7 @@ namespace grocery::data
      * @param quantity Frequency associated with the item.
      * @return User-facing quantity or not-found message.
      */
+    // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
     std::string DataPresenter::FormatItemWithQuantity(const std::string& item, int quantity) const
     {
         if (quantity > 0)
@@ -23,11 +24,9 @@ namespace grocery::data
             // Positive quantities are shown directly to the user.
             return item + ": " + std::to_string(quantity);
         }
-        else
-        {
-            // A zero count indicates that the requested item is absent.
-            return item + ": Not found";
-        }
+
+        // A zero count indicates that the requested item is absent.
+        return item + ": Not found";
     }
 
     /**
@@ -35,6 +34,7 @@ namespace grocery::data
      * @param items Item names and their frequencies.
      * @return Complete table formatted for console output.
      */
+    // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
     std::string DataPresenter::FormatItemsWithQuantities(const std::map<std::string, int>& items) const
     {
         std::stringstream result;
@@ -64,6 +64,7 @@ namespace grocery::data
      * @param items Item names and their frequencies.
      * @return Complete histogram formatted for console output.
      */
+    // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
     std::string DataPresenter::FormatItemsHistogram(const std::map<std::string, int>& items) const
     {
         std::stringstream result;

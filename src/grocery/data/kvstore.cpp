@@ -27,7 +27,7 @@ namespace grocery::data
     {
         // The map comparator makes this lookup case-insensitive while
         // preserving the spelling of the existing map key.
-        auto it = find(key);
+        const auto it = find(key);
         if (it != end())
         {
             // Each accepted input record represents one additional occurrence.

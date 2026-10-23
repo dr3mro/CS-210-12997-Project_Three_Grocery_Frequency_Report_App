@@ -24,7 +24,7 @@ namespace
 
 TEST_CASE("UIController clears the screen with an ANSI sequence")
 {
-    grocery::ui::UIController controller;
+    const grocery::ui::UIController controller;
     CoutCapture output;
 
     controller.cleanScreen();

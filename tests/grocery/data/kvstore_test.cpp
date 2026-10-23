@@ -13,8 +13,8 @@ namespace
 
 TEST_CASE("KVStore::Instance returns the same singleton")
 {
-    auto& first = grocery::data::KVStore::Instance();
-    auto& second = grocery::data::KVStore::Instance();
+    const auto& first = grocery::data::KVStore::Instance();
+    const auto& second = grocery::data::KVStore::Instance();
 
     CHECK(&first == &second);
 }
@@ -84,7 +84,7 @@ TEST_CASE("KVStore returns a detached copy of the items")
 
 TEST_CASE("CaseInsensitiveCompare orders mixed-case names")
 {
-    grocery::data::CaseInsensitiveCompare compare;
+    const grocery::data::CaseInsensitiveCompare compare;
 
     CHECK(compare("apple", "Banana"));
     CHECK_FALSE(compare("Banana", "apple"));

@@ -10,8 +10,8 @@ using grocery::test::temporaryPath;
 
 TEST_CASE("Writer writes a complete text file")
 {
-    grocery::io::Writer writer;
-    auto file = temporaryPath("writer_output.txt");
+    const grocery::io::Writer writer;
+    const auto file = temporaryPath("writer_output.txt");
 
     writer.Write(file.string(), "Milk:2\nBread:1\n");
 
@@ -22,8 +22,8 @@ TEST_CASE("Writer writes a complete text file")
 
 TEST_CASE("Writer replaces the existing file contents")
 {
-    grocery::io::Writer writer;
-    auto file = temporaryPath("writer_replace.txt");
+    const grocery::io::Writer writer;
+    const auto file = temporaryPath("writer_replace.txt");
     writer.Write(file.string(), "old content");
 
     writer.Write(file.string(), "new");
@@ -35,8 +35,8 @@ TEST_CASE("Writer replaces the existing file contents")
 
 TEST_CASE("Writer accepts empty data")
 {
-    grocery::io::Writer writer;
-    auto file = temporaryPath("writer_empty.txt");
+    const grocery::io::Writer writer;
+    const auto file = temporaryPath("writer_empty.txt");
     writer.Write(file.string(), "previous");
 
     writer.Write(file.string(), "");
@@ -48,9 +48,9 @@ TEST_CASE("Writer accepts empty data")
 
 TEST_CASE("Writer throws when a file cannot be opened")
 {
-    grocery::io::Writer writer;
-    auto missingDirectory = temporaryPath("writer_missing_dir");
-    auto file = missingDirectory / "output.txt";
+    const grocery::io::Writer writer;
+    const auto missingDirectory = temporaryPath("writer_missing_dir");
+    const auto file = missingDirectory / "output.txt";
 
     CHECK_THROWS_AS(writer.Write(file.string(), "data"), std::runtime_error);
     CHECK_THROWS_WITH(writer.Write(file.string(), "data"), doctest::Contains("Could not open file for writing"));

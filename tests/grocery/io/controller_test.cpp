@@ -13,7 +13,7 @@ using grocery::test::writeTextFile;
 TEST_CASE("FileController reads through the reader")
 {
     grocery::io::FileController controller;
-    auto file = temporaryPath("file_controller_input.txt");
+    const auto file = temporaryPath("file_controller_input.txt");
     writeTextFile(file, "Milk\nBread\n");
 
     std::string data;
@@ -26,8 +26,8 @@ TEST_CASE("FileController reads through the reader")
 
 TEST_CASE("FileController writes through the writer")
 {
-    grocery::io::FileController controller;
-    auto file = temporaryPath("file_controller_output.txt");
+    const grocery::io::FileController controller;
+    const auto file = temporaryPath("file_controller_output.txt");
 
     controller.WriteToFile(file.string(), "Milk:1\n");
 
@@ -39,7 +39,7 @@ TEST_CASE("FileController writes through the writer")
 TEST_CASE("FileController reports read failures without throwing")
 {
     grocery::io::FileController controller;
-    auto missing = temporaryPath("file_controller_missing.txt");
+    const auto missing = temporaryPath("file_controller_missing.txt");
     CinRedirect input("\n");
     CoutCapture output;
 
@@ -50,9 +50,9 @@ TEST_CASE("FileController reports read failures without throwing")
 
 TEST_CASE("FileController reports write failures without throwing")
 {
-    grocery::io::FileController controller;
-    auto missingDirectory = temporaryPath("file_controller_missing_dir");
-    auto file = missingDirectory / "output.txt";
+    const grocery::io::FileController controller;
+    const auto missingDirectory = temporaryPath("file_controller_missing_dir");
+    const auto file = missingDirectory / "output.txt";
     CinRedirect input("\n");
     CoutCapture output;
 
@@ -64,7 +64,7 @@ TEST_CASE("FileController supports polymorphic use")
 {
     struct StubController : grocery::io::FileController
     {
-        void ReadFromFile(const std::string&, std::string& data) override { data = "stub"; }
+        void ReadFromFile(const std::string& /*filename*/, std::string& data) override { data = "stub"; }
     };
 
     StubController stub;

@@ -20,7 +20,7 @@ TEST_CASE("Application file names are defined")
 
 TEST_CASE("AppController runs the load, save, and menu workflow")
 {
-    auto directory = grocery::test::temporaryPath("app_run");
+    const auto directory = grocery::test::temporaryPath("app_run");
     std::filesystem::create_directories(directory);
     writeTextFile(directory / INPUT_FILE, "Milk\nBread\nMilk\n");
 
