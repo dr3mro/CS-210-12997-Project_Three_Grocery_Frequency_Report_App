@@ -18,11 +18,12 @@ namespace grocery::ui
          * @brief Creates a menu item.
          * @param label Text displayed for the item.
          * @param callback Function executed when the item is selected.
+         * @param number One-based number shown to the user for this item.
          *
          * An empty callback is permitted by the type system, but invoking an
          * empty callback later may throw std::bad_function_call.
          */
-        explicit Item(std::string label, std::function<void()> callback);
+        Item(std::string label, std::function<void()> callback, int number);
 
         /** @brief Destroy the menu item and its callback. */
         ~Item() = default;
@@ -43,7 +44,6 @@ namespace grocery::ui
         std::string text;
         std::function<void()> action;
         int index{0};
-        static int nextIndex;
     }; // class Item
 
 } // namespace grocery::ui

@@ -40,8 +40,8 @@ TEST_CASE("FileController reports read failures without throwing")
 {
     grocery::io::FileController controller;
     const auto missing = temporaryPath("file_controller_missing.txt");
-    CinRedirect input("\n");
-    CoutCapture output;
+    const CinRedirect input("\n");
+    const CoutCapture output;
 
     std::string data;
     CHECK_NOTHROW(controller.ReadFromFile(missing.string(), data));
@@ -53,8 +53,8 @@ TEST_CASE("FileController reports write failures without throwing")
     const grocery::io::FileController controller;
     const auto missingDirectory = temporaryPath("file_controller_missing_dir");
     const auto file = missingDirectory / "output.txt";
-    CinRedirect input("\n");
-    CoutCapture output;
+    const CinRedirect input("\n");
+    const CoutCapture output;
 
     CHECK_NOTHROW(controller.WriteToFile(file.string(), "data"));
     CHECK(output.str().find("Press Enter to continue") != std::string::npos);

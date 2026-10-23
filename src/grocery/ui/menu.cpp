@@ -6,6 +6,7 @@
 #include "grocery/ui/menu.hpp"
 
 #include <iostream>
+#include <utility>
 
 namespace grocery::ui
 {
@@ -17,7 +18,8 @@ namespace grocery::ui
     void Menu::addItem(const std::string& text, std::function<void()> action)
     {
         // Store items by value so the menu owns their lifetime.
-        items.emplace_back(text, action);
+        // Numbers are one-based because users select entries starting at 1.
+        items.emplace_back(text, std::move(action), GetMenuItemCount() + 1);
     }
 
     /**

@@ -25,7 +25,7 @@ namespace
 TEST_CASE("UIController clears the screen with an ANSI sequence")
 {
     const grocery::ui::UIController controller;
-    CoutCapture output;
+    const CoutCapture output;
 
     controller.cleanScreen();
 
@@ -35,7 +35,7 @@ TEST_CASE("UIController clears the screen with an ANSI sequence")
 TEST_CASE("UIController creates the four supported menu entries")
 {
     grocery::ui::UIController controller;
-    CoutCapture output;
+    const CoutCapture output;
 
     controller.CreateMenu();
     controller.ShowMenu();
@@ -53,8 +53,8 @@ TEST_CASE("UIController leaves the menu on q")
 {
     grocery::ui::UIController controller;
     controller.CreateMenu();
-    CinRedirect input("q\n");
-    CoutCapture output;
+    const CinRedirect input("q\n");
+    const CoutCapture output;
 
     controller.ProcessUserChoice();
 
@@ -66,8 +66,8 @@ TEST_CASE("UIController accepts an uppercase quit command")
 {
     grocery::ui::UIController controller;
     controller.CreateMenu();
-    CinRedirect input("Q\n");
-    CoutCapture output;
+    const CinRedirect input("Q\n");
+    const CoutCapture output;
 
     controller.ProcessUserChoice();
 
@@ -78,8 +78,8 @@ TEST_CASE("UIController rejects empty and non-numeric choices")
 {
     grocery::ui::UIController controller;
     controller.CreateMenu();
-    CinRedirect input("\nabc\nq\n");
-    CoutCapture output;
+    const CinRedirect input("\nabc\nq\n");
+    const CoutCapture output;
 
     controller.ProcessUserChoice();
 
@@ -90,8 +90,8 @@ TEST_CASE("UIController rejects choices with trailing characters")
 {
     grocery::ui::UIController controller;
     controller.CreateMenu();
-    CinRedirect input("2abc\nq\n");
-    CoutCapture output;
+    const CinRedirect input("2abc\nq\n");
+    const CoutCapture output;
 
     controller.ProcessUserChoice();
 
@@ -102,8 +102,8 @@ TEST_CASE("UIController rejects out-of-range choices")
 {
     grocery::ui::UIController controller;
     controller.CreateMenu();
-    CinRedirect input("0\n5\nq\n");
-    CoutCapture output;
+    const CinRedirect input("0\n5\nq\n");
+    const CoutCapture output;
 
     controller.ProcessUserChoice();
 
@@ -114,8 +114,8 @@ TEST_CASE("UIController stops cleanly when input ends")
 {
     grocery::ui::UIController controller;
     controller.CreateMenu();
-    CinRedirect input("");
-    CoutCapture output;
+    const CinRedirect input("");
+    const CoutCapture output;
 
     CHECK_NOTHROW(controller.ProcessUserChoice());
     CHECK(output.str().find("Exiting the program.") == std::string::npos);

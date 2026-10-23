@@ -25,11 +25,11 @@ TEST_CASE("AppController runs the load, save, and menu workflow")
     writeTextFile(directory / INPUT_FILE, "Milk\nBread\nMilk\n");
 
     grocery::data::KVStore::Instance().clear();
-    CinRedirect input("q\n");
+    const CinRedirect input("q\n");
 
     {
-        CurrentPathGuard guard(directory);
-        CoutCapture output;
+        const CurrentPathGuard guard(directory);
+        const CoutCapture output;
 
         grocery::app::AppController::Run();
 

@@ -20,8 +20,8 @@ namespace
 TEST_CASE("Dialog finds an item and returns to the menu on q")
 {
     seedStore();
-    CinRedirect input("Apple\nq\n");
-    CoutCapture output;
+    const CinRedirect input("Apple\nq\n");
+    const CoutCapture output;
     grocery::ui::Dialog dialog;
 
     dialog.FindItem();
@@ -33,8 +33,8 @@ TEST_CASE("Dialog finds an item and returns to the menu on q")
 TEST_CASE("Dialog lookup is case-insensitive")
 {
     seedStore();
-    CinRedirect input("apple\nQ\n");
-    CoutCapture output;
+    const CinRedirect input("apple\nQ\n");
+    const CoutCapture output;
     grocery::ui::Dialog dialog;
 
     dialog.FindItem();
@@ -45,8 +45,8 @@ TEST_CASE("Dialog lookup is case-insensitive")
 TEST_CASE("Dialog reports unknown items")
 {
     seedStore();
-    CinRedirect input("Bread\nq\n");
-    CoutCapture output;
+    const CinRedirect input("Bread\nq\n");
+    const CoutCapture output;
     grocery::ui::Dialog dialog;
 
     dialog.FindItem();
@@ -57,8 +57,8 @@ TEST_CASE("Dialog reports unknown items")
 TEST_CASE("Dialog trims trailing whitespace from lookups")
 {
     seedStore();
-    CinRedirect input("Apple   \nq\n");
-    CoutCapture output;
+    const CinRedirect input("Apple   \nq\n");
+    const CoutCapture output;
     grocery::ui::Dialog dialog;
 
     dialog.FindItem();
@@ -69,8 +69,8 @@ TEST_CASE("Dialog trims trailing whitespace from lookups")
 TEST_CASE("Dialog accepts q in any case")
 {
     seedStore();
-    CinRedirect input("q\n");
-    CoutCapture output;
+    const CinRedirect input("q\n");
+    const CoutCapture output;
     grocery::ui::Dialog dialog;
 
     dialog.FindItem();
@@ -81,8 +81,8 @@ TEST_CASE("Dialog accepts q in any case")
 TEST_CASE("Dialog prints the quantities table and pauses")
 {
     seedStore();
-    CinRedirect input("\n");
-    CoutCapture output;
+    const CinRedirect input("\n");
+    const CoutCapture output;
     grocery::ui::Dialog dialog;
 
     dialog.ListItemsWithQuantities();
@@ -95,8 +95,8 @@ TEST_CASE("Dialog prints the quantities table and pauses")
 TEST_CASE("Dialog prints the histogram and pauses")
 {
     seedStore();
-    CinRedirect input("\n");
-    CoutCapture output;
+    const CinRedirect input("\n");
+    const CoutCapture output;
     grocery::ui::Dialog dialog;
 
     dialog.PrintHistogram();

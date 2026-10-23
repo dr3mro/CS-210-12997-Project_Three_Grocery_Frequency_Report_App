@@ -41,7 +41,7 @@ TEST_CASE("Menu returns nullptr for negative indexes")
 {
     grocery::ui::Menu menu;
     menu.addItem("first", [] {});
-    CerrCapture errors;
+    const CerrCapture errors;
 
     CHECK(menu.getItem(-1) == nullptr);
     CHECK(errors.str().find("Index out of bounds") != std::string::npos);
@@ -51,7 +51,7 @@ TEST_CASE("Menu returns nullptr for out-of-range indexes")
 {
     grocery::ui::Menu menu;
     menu.addItem("first", [] {});
-    CerrCapture errors;
+    const CerrCapture errors;
 
     CHECK(menu.getItem(1) == nullptr);
     CHECK(errors.str().find("Index out of bounds") != std::string::npos);
@@ -62,7 +62,7 @@ TEST_CASE("Menu prints a heading and its items in order")
     grocery::ui::Menu menu;
     menu.addItem("first", [] {});
     menu.addItem("second", [] {});
-    CoutCapture output;
+    const CoutCapture output;
 
     menu.ShowMenu();
 
@@ -82,4 +82,19 @@ TEST_CASE("Menu items execute their actions")
     menu.getItem(0)->ExecuteAction();
 
     CHECK(calls == 1);
+}
+
+TEST_CASE("Each menu numbers its items from one")
+{
+    grocery::ui::Menu first;
+    first.addItem("a", [] {});
+    first.addItem("b", [] {});
+
+    grocery::ui::Menu second;
+    second.addItem("c", [] {});
+    const CoutCapture output;
+
+    second.ShowMenu();
+
+    CHECK(output.str().find("Press 1 to c") != std::string::npos);
 }

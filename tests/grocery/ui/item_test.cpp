@@ -10,7 +10,7 @@ using grocery::test::CoutCapture;
 
 TEST_CASE("Item exposes its display text")
 {
-    const grocery::ui::Item item("find an item.", [] {});
+    const grocery::ui::Item item("find an item.", [] {}, 1);
 
     CHECK(item.GetText() == "find an item.");
 }
@@ -18,7 +18,7 @@ TEST_CASE("Item exposes its display text")
 TEST_CASE("Item executes its action")
 {
     bool executed = false;
-    const grocery::ui::Item item("run", [&executed] { executed = true; });
+    const grocery::ui::Item item("run", [&executed] { executed = true; }, 1);
 
     item.ExecuteAction();
 
@@ -27,15 +27,15 @@ TEST_CASE("Item executes its action")
 
 TEST_CASE("Item throws when its action is empty")
 {
-    const grocery::ui::Item item("empty", std::function<void()>{});
+    const grocery::ui::Item item("empty", std::function<void()>{}, 1);
 
     CHECK_THROWS_AS(item.ExecuteAction(), std::invalid_argument);
 }
 
 TEST_CASE("Item prints its number and text")
 {
-    const grocery::ui::Item item("list items.", [] {});
-    CoutCapture output;
+    const grocery::ui::Item item("list items.", [] {}, 1);
+    const CoutCapture output;
 
     item.PrintItem();
 
@@ -43,22 +43,12 @@ TEST_CASE("Item prints its number and text")
     CHECK(output.str().find("Press ") == 0);
 }
 
-TEST_CASE("Item numbering increases for each created item")
+TEST_CASE("Item prints the number it was given")
 {
-    const grocery::ui::Item first("first", [] {});
-    std::string firstOutput;
-    {
-        CoutCapture output;
-        first.PrintItem();
-        firstOutput = output.str();
-    }
+    const grocery::ui::Item item("list items.", [] {}, 3);
+    const CoutCapture output;
 
-    const grocery::ui::Item second("second", [] {});
-    CoutCapture output;
-    second.PrintItem();
+    item.PrintItem();
 
-    const auto firstNumber = std::stoi(firstOutput.substr(std::string("Press ").size()));
-    const auto secondNumber = std::stoi(output.str().substr(std::string("Press ").size()));
-
-    CHECK(secondNumber == firstNumber + 1);
+    CHECK(output.str() == "Press 3 to list items.\n");
 }
