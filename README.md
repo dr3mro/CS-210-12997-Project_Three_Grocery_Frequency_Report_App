@@ -1,3 +1,31 @@
+## Reflection
+
+**Summarize the project and what problem it was solving.**
+
+The Corner Grocer wanted to know which items people buy the most so they could rearrange the produce section. They had a text file where every purchase was just an item name on its own line, thousands of them, and no easy way to read it. My program reads that file, counts how many times each item shows up, saves the counts to `frequency.dat` as a backup, and then gives a menu where you can look up one item, list every item with its count, or print a histogram made of asterisks. Simple problem. But it was the first time in this course I built something that felt like a real tool instead of an exercise.
+
+**What did you do particularly well?**
+
+I think the structure is the part I'm proudest of. Instead of throwing everything into `main.cpp`, I split the code into folders for app logic, data, file I/O, and the UI, each with its own headers under `include/grocery/`. That meant when the menu was acting up I only had to look in one place. I also set up Doxygen and a GitHub Actions workflow that publishes the docs to GitHub Pages, plus another workflow that builds binaries for Linux, macOS, and Windows. None of that was required. I did it because I wanted to see if I could, and honestly it was the most fun part.
+
+**Where could you enhance your code?**
+
+Input handling could be tighter. Right now the program trusts that the input file is clean, one item per line, and it would be better to trim whitespace and normalize capitalization so "apples" and "Apples " don't get counted as two different things. I'd also like to add unit tests. I tested by running the menu over and over and checking the numbers by hand, which works for a file this size but wouldn't scale. On the security side, the program reads a file path from the working directory and overwrites `frequency.dat` without asking, so checking that the files exist and are what you expect before touching them would make it safer to run somewhere other than my own laptop.
+
+**Which pieces of the code did you find most challenging to write, and how did you overcome this?**
+
+Weirdly, the hardest parts weren't the C++. They were the build setup. When I added the Visual Studio project, the linker kept failing because I had four files all named `controller.cpp` in different folders, and Visual Studio was dumping their object files into the same place so they overwrote each other. It took me a while to figure out that the code was fine and the build config was the problem. The fix was telling Visual Studio to keep each source folder's path in its object file names. GitHub Pages was the other headache. My docs workflow kept failing with an error about a missing `docs` folder, and it turned out Pages was set to deploy from a branch and was running Jekyll instead of my workflow. Switching the source to GitHub Actions fixed it. For resources, I leaned on cppreference, the GitHub Actions docs, and a lot of reading through other people's issue threads. I'm keeping those in my toolkit, along with clang-tidy, which caught a few things I'd never have noticed.
+
+**What skills from this project will be particularly transferable?**
+
+Breaking a program into small classes with one job each is the big one. I'll use that in pretty much every project from now on. Reading and writing files, using a map to count things, and building a menu loop that doesn't crash on bad input are all basic, but they show up everywhere. The CI and documentation setup will carry over too, since almost every real codebase has some kind of automated build.
+
+**How did you make this program maintainable, readable, and adaptable?**
+
+Every class and function has a Doxygen comment explaining what it does, and I used clang-format so the style stays consistent no matter which editor I'm in. I also made class and flowchart diagrams with Graphviz and put them in the `diagrams` folder so someone new can see how the pieces fit before reading any code. Because the file reading, the data storage, and the display are separate, swapping one out is easy. If the grocer wanted the report as a CSV, or wanted to read from a database instead of a text file, I'd only have to change one part and leave the rest alone.
+
+---
+
 # Grocery Frequency Report
 
 CS-210 Project Three — Grocery Frequency Report
