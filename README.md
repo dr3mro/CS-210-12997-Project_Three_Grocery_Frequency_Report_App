@@ -49,7 +49,7 @@ searching and displaying the collected data.
 ## Requirements
 
 - A C++17-compatible compiler
-- GNU Make
+- CMake 3.25 or newer, used by the `./cx` helper
 - Doxygen for local documentation generation
 - GitHub Actions and GitHub Pages for automatic online documentation publishing
 
@@ -57,20 +57,20 @@ The project has been tested with the compiler and tools available on macOS.
 
 ## Binary releases
 
-Create and push a version tag to build and publish compressed binaries:
+Create and push a version tag, `v` followed by the version in the `VERSION` file, to build and publish compressed binaries:
 
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The `Build and publish binaries` workflow also supports manual runs from the
-repository's **Actions** tab. Every push to `main` creates downloadable
-workflow artifacts. To publish those artifacts as a GitHub Release without
-creating a tag first, manually run the workflow with **Publish the build
-artifacts as a GitHub Release** enabled. You may provide a release tag, or
-leave it blank to use `build-<run number>`. Tagged runs publish one asset for each supported
-operating-system and architecture combination:
+The `Release` workflow (`.github/workflows/release.yml`) also supports manual
+runs from the repository's **Actions** tab. To publish a GitHub Release without
+creating a tag first, run the workflow manually with **Publish the build
+artifacts as a GitHub Release** (`publish_release`) enabled. Optionally, enter a
+release tag; if you leave it blank, the tag is `build-<run number>`. Tagged runs
+and manual runs with publishing enabled produce these archives for each
+supported operating-system and architecture combination:
 
 ```text
 grocery-linux-x64.tar.gz
@@ -78,10 +78,21 @@ grocery-linux-x86.tar.gz
 grocery-linux-arm64.tar.gz
 grocery-macos-x64.tar.gz
 grocery-macos-arm64.tar.gz
-grocery-windows-x64.tar.gz
-grocery-windows-x86.tar.gz
-grocery-windows-arm64.tar.gz
+grocery-windows-x64.zip
+grocery-windows-x86.zip
+grocery-windows-arm64.zip
 ```
+
+Linux and macOS archives are `.tar.gz` files. Windows archives are `.zip` files.
+Each platform can also produce two companion archives, with the same extension
+as its main archive:
+
+```text
+grocery-<os>-<arch>-debug   Debug symbols (.debug on Linux, .dSYM on macOS, .pdb on Windows)
+grocery-<os>-<arch>-sbom    Software bill of materials
+```
+
+The release also includes a `SHA256SUMS` file with the checksums of every archive.
 
 The archives contain the executable named for the matching platform and
 architecture. Linux x86 and Windows x86 are 32-bit builds. Current macOS SDKs
@@ -143,36 +154,100 @@ tasks are `Make: release`, `Make: build debug`, `Make: run`, `Make: debug`,
 
 ## Visual Studio
 
-Visual Studio 2026 project files are included for Windows development:
+Visual Studio project files are included for Windows development:
 
 ```text
-Grocery.sln
+grocery.sln
+grocery.vcxproj
 ```
 
-Open `Grocery.sln` in Visual Studio 2026, select `Debug` or `Release` and either
-the `x64` or `ARM64` platform, and build the `Grocery` project. The
-executable is written to:
+Open `grocery.sln` in Visual Studio, select `Debug` or `Release` and the
+platform you want, and build the `grocery` project. The solution also includes a
+`grocery_tests` project. Build output is written under:
 
 ```text
-build\vs\<Platform>\<Configuration>\grocery.exe
+build\Windows\<arch>\vs\
 ```
 
 The project uses the repository root as its working directory so
 `CS210_Project_Three_Input_File.txt` is found when launched from Visual
-Studio. The Visual Studio project is an additional build option; the
-Makefile remains the command-line build system for macOS and Unix-like
-environments. Visual Studio preserves each source directory in its
-intermediate object paths so files with the same name, such as the four
-`controller.cpp` files, receive unique intermediate object names and do not
-collide during linking. After changing the project configuration, use
-**Build → Clean Solution**, then **Build → Rebuild Solution**.
+Studio. The Visual Studio project is an additional build option. The
+command-line build uses CMake and the `./cx` helper described below.
+
+## Building
+
+The project uses CMake. The `./cx` helper wraps the CMake presets. From the
+project root, run:
+
+```bash
+./cx build
+```
+
+On Windows, use `cx.cmd` or `cx.ps1` instead. The default preset is `debug`,
+which enables AddressSanitizer and UndefinedBehaviorSanitizer. `cx` needs CMake
+3.25 or newer on your PATH.
+
+Binaries are written to a host-specific folder:
+
+```text
+build/<Host>/<preset>/grocery
+```
+
+`<Host>` is `Darwin`, `Linux`, or `Windows`. For example, a release build on
+macOS produces `build/Darwin/release/grocery`.
+
+To remove generated build files:
+
+```bash
+./cx clean
+```
+
+Use `./cx clean --all` to remove everything, including all presets.
+
+## Presets
+
+Available CMake presets include:
+
+| Preset                     | Purpose                                   |
+| -------------------------- | ----------------------------------------- |
+| `release`                  | Optimized build                           |
+| `debug`                    | Debug build with ASan and UBSan (default) |
+| `debug-nosan`              | Debug build without sanitizers            |
+| `tsan`                     | ThreadSanitizer build                     |
+| `ci`, `ci-gcc`, `ci-clang` | Configurations used by CI                 |
+| `coverage`                 | Coverage build                            |
+| `fuzz`                     | Fuzzing build                             |
+| `docs`                     | Documentation build                       |
+| `vs2022`, `vs2026`         | CMake-generated Visual Studio projects    |
+
+List the presets with:
+
+```bash
+./cx presets
+```
+
+## Visual Studio presets
+
+The CMake-generated Visual Studio presets write their projects to:
+
+```text
+build\Windows\<arch>\vs2026
+build\Windows\<arch>\vs2022
+```
+
+## Editor tasks
+
+Build, run, and other commands are also available as editor tasks in:
+
+- Visual Studio Code: `.vscode/tasks.json`
+- Zed: `.zed/tasks.json`
 
 ## Running
 
 Run the application with:
 
 ```bash
-make run
+./cx run
 ```
 
 The program expects the input file to be available in the current working
@@ -217,14 +292,19 @@ serialized frequency report produced from the in-memory grocery store.
 │       ├── io/               File reading and writing
 │       └── ui/               Menu and console dialogs
 ├── src/                      C++ implementations
+├── tests/                    Unit tests (doctest, fetched with CMake)
+├── fuzz/                     Fuzz targets
+├── cmake/                    CMake build helpers, including the cx commands
 ├── main.cpp                  Program entry point
-├── Makefile                  Build, run, clean, and documentation targets
+├── CMakeLists.txt            Top-level CMake build definition
+├── CMakePresets.json         Configure, build, test, and docs presets
+├── cx, cx.ps1, cx.cmd        Helper scripts that wrap CMake
+├── grocery.sln, grocery.vcxproj  Hand-written Visual Studio project
+├── VERSION                   Release version (must match the release tag)
 ├── CS210_Project_Three_Input_File.txt
 ├── frequency.dat
 ├── Doxyfile                  Doxygen configuration
-├── diagrams/                 Flowchart and class design diagrams
-└── .github/workflows/
-    └── docs.yml              GitHub Pages documentation workflow
+└── .github/workflows/        CI, CodeQL, docs, release, and Scorecard workflows
 ```
 
 ## Documentation
@@ -232,14 +312,18 @@ serialized frequency report produced from the in-memory grocery store.
 Generate the HTML documentation locally with:
 
 ```bash
-make docs
+./cx docs
 ```
 
-The generated site is located at:
+This runs `cmake --workflow --preset docs`. The generated site is located at:
 
 ```text
 docs/index.html
 ```
+
+If Graphviz is installed, the docs build also renders the architecture and class
+diagrams. Hand-written `.dot` files are optional. The `diagrams/` folder is not
+present in this repository.
 
 The published Doxygen documentation is available online at:
 
@@ -251,8 +335,9 @@ https://dr3mro.github.io/CS-210-12997-Project_Three_Grocery_Frequency_Report/
 
 The `Publish Doxygen documentation` GitHub Actions workflow runs whenever
 changes are pushed to the `main` branch. It also supports manual execution
-from the repository's **Actions** tab. The workflow runs `make docs`, packages
-the generated HTML, and deploys it to GitHub Pages.
+from the repository's **Actions** tab. The workflow runs
+`cmake --workflow --preset docs`, packages the generated HTML, and deploys it
+to GitHub Pages.
 
 To enable the online deployment, configure the repository settings as:
 
@@ -280,20 +365,23 @@ repository administrator must enable Pages first.
 
 ## Development commands
 
-| Command                    | Description                                          |
-| -------------------------- | ---------------------------------------------------- |
-| `make`                     | Build the release executable                         |
-| `make release`             | Build the release executable explicitly              |
-| `make run`                 | Build and run the application                        |
-| `make build/debug/grocery` | Build the debug executable                           |
-| `make debug`               | Build and launch the debug executable in LLDB or GDB |
-| `make diagrams`            | Regenerate the flowchart and class diagram PNG files |
-| `make docs`                | Generate Doxygen HTML documentation                  |
-| `make clean`               | Remove build and generated documentation files       |
+| Command         | Description                                     |
+| --------------- | ----------------------------------------------- |
+| `./cx build`    | Build the default (debug) preset                |
+| `./cx run`      | Build and run the application                   |
+| `./cx test`     | Run the test suite                              |
+| `./cx dev`      | Development workflow                            |
+| `./cx fmt`      | Format sources                                  |
+| `./cx lint`     | Run static analysis                             |
+| `./cx docs`     | Generate Doxygen HTML documentation             |
+| `./cx coverage` | Build and report code coverage                  |
+| `./cx fuzz`     | Run fuzz targets                                |
+| `./cx presets`  | List CMake presets                              |
+| `./cx clean`    | Remove build files (`--all` removes everything) |
+| `./cx help`     | Show all commands                               |
 
-CMake, Ninja, vcpkg and the `./cx` helper are also supported. See the
-[template wiki](https://github.com/dr3mro/cpp-template/wiki) for those
-workflows.
+Run `./cx help` for the full list, which also includes `doctor`, `install`,
+`package`, `targets`, and `version`.
 
 ## License
 
