@@ -18,3 +18,4 @@ cx text eol=lf
 *.props text eol=crlf
 *.targets text eol=crlf
 Directory.Build.props text eol=crlf
+fuzz/corpus/** -text
