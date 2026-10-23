@@ -36,4 +36,3 @@ Write the subject as an imperative sentence that says what the commit does
 The release notes are written from these subjects: one starting with *Add*
 is listed under Added, *Fix* under Fixed, *Remove* under Removed, and the
 rest under Changed (see `cliff.toml`).
-

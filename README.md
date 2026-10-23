@@ -1,3 +1,7 @@
+# Grocery Frequency Report
+
+CS-210 Project Three — Grocery Frequency Report
+
 ## Reflection
 
 **Summarize the project and what problem it was solving.**
@@ -25,10 +29,6 @@ Breaking a program into small classes with one job each is the big one. I'll use
 Every class and function has a Doxygen comment explaining what it does, and I used clang-format so the style stays consistent no matter which editor I'm in. I also made class and flowchart diagrams with Graphviz and put them in the `diagrams` folder so someone new can see how the pieces fit before reading any code. Because the file reading, the data storage, and the display are separate, swapping one out is easy. If the grocer wanted the report as a CSV, or wanted to read from a database instead of a text file, I'd only have to change one part and leave the rest alone.
 
 ---
-
-# Grocery Frequency Report
-
-CS-210 Project Three — Grocery Frequency Report
 
 This C++17 console application reads grocery item records, counts item
 occurrences, writes a frequency report, and provides an interactive menu for
@@ -101,50 +101,6 @@ releases target Intel 64-bit (`x64`) and Apple Silicon (`arm64`) only. The
 macOS x64 build is cross-compiled on the newer macOS runner to avoid the
 limited availability of older Intel runners.
 
-## Building
-
-From the project root, run:
-
-```bash
-make
-```
-
-The release executable is created at:
-
-```text
-build/release/grocery
-```
-
-To build the debug executable without launching a debugger:
-
-```bash
-make build/debug/grocery
-```
-
-To build and launch the debug executable in LLDB or GDB:
-
-```bash
-make debug
-```
-
-The debug executable is created at:
-
-```text
-build/debug/grocery
-```
-
-You can also build the release target explicitly:
-
-```bash
-make release
-```
-
-To remove generated build files:
-
-```bash
-make clean
-```
-
 ## Visual Studio Code tasks
 
 The Makefile targets are available from **Terminal → Run Task** in Visual
@@ -174,7 +130,7 @@ The project uses the repository root as its working directory so
 Studio. The Visual Studio project is an additional build option. The
 command-line build uses CMake and the `./cx` helper described below.
 
-## Building
+## Building with CMake
 
 The project uses CMake. The `./cx` helper wraps the CMake presets. From the
 project root, run:
