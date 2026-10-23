@@ -291,26 +291,28 @@ Source: /github/workspace/./docs
 Error: No such file or directory ... /github/workspace/docs
 ```
 
-GitHub is running the branch-based Jekyll publisher, not
-`.github/workflows/docs.yml`. Change the Pages source to **GitHub Actions**,
-save the setting, and rerun the `Publish Doxygen documentation` workflow. If
-the workflow reports `Get Pages site failed` or `Not Found`, Pages has not
-been enabled for the repository yet, or its source is still set to a branch.
-A repository administrator must select **GitHub Actions** in the Pages
-settings before the first deployment.
+GitHub is using the branch-based Jekyll publisher instead of
+`.github/workflows/docs.yml`. Set **Settings → Pages → Build and deployment →
+Source** to **GitHub Actions**, save, and rerun the `Publish Doxygen
+documentation` workflow. If the workflow reports `Get Pages site failed`, a
+repository administrator must enable Pages first.
 
 ## Development commands
 
-| Command | Description |
-| --- | --- |
-| `make` | Build the release executable |
-| `make release` | Build the release executable explicitly |
-| `make run` | Build and run the application |
-| `make build/debug/grocery` | Build the debug executable |
-| `make debug` | Build and launch the debug executable in LLDB or GDB |
-| `make diagrams` | Regenerate the flowchart and class diagram PNG files |
-| `make docs` | Generate Doxygen HTML documentation |
-| `make clean` | Remove build and generated documentation files |
+| Command                    | Description                                          |
+| -------------------------- | ---------------------------------------------------- |
+| `make`                     | Build the release executable                         |
+| `make release`             | Build the release executable explicitly              |
+| `make run`                 | Build and run the application                        |
+| `make build/debug/grocery` | Build the debug executable                           |
+| `make debug`               | Build and launch the debug executable in LLDB or GDB |
+| `make diagrams`            | Regenerate the flowchart and class diagram PNG files |
+| `make docs`                | Generate Doxygen HTML documentation                  |
+| `make clean`               | Remove build and generated documentation files       |
+
+CMake, Ninja, vcpkg and the `./cx` helper are also supported. See the
+[template wiki](https://github.com/dr3mro/cpp-template/wiki) for those
+workflows.
 
 ## License
 

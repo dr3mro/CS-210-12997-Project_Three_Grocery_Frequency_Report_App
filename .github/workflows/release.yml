@@ -1,9 +1,11 @@
-name: Build and publish binaries
+name: Release
+
+# Builds the app for every platform and, for a v* tag (or a manual run with
+# publish_release ticked), publishes a GitHub Release. The work is done by
+# release-build.yml, shared with library projects.
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "v*"
   workflow_dispatch:
@@ -18,116 +20,20 @@ on:
         required: false
         type: string
 
+# The most any job of release-build.yml needs; each job there asks for less.
 permissions:
   contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build:
-    name: ${{ matrix.os }} ${{ matrix.arch }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: linux
-            arch: x64
-            runner: ubuntu-latest
-            cmake_args: "-DCMAKE_CXX_COMPILER=g++"
-            extension: ""
-          - os: linux
-            arch: x86
-            runner: ubuntu-latest
-            cmake_args: "-DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_FLAGS=-m32"
-            extension: ""
-          - os: linux
-            arch: arm64
-            runner: ubuntu-24.04-arm
-            cmake_args: "-DCMAKE_CXX_COMPILER=g++"
-            extension: ""
-          - os: macos
-            arch: x64
-            runner: macos-14
-            cmake_args: "-DCMAKE_CXX_COMPILER=clang++ -DCMAKE_OSX_ARCHITECTURES=x86_64"
-            extension: ""
-          - os: macos
-            arch: arm64
-            runner: macos-14
-            cmake_args: "-DCMAKE_CXX_COMPILER=clang++ -DCMAKE_OSX_ARCHITECTURES=arm64"
-            extension: ""
-          - os: windows
-            arch: x64
-            runner: windows-latest
-            msvc_arch: amd64
-            cmake_args: ""
-            extension: ".exe"
-          - os: windows
-            arch: x86
-            runner: windows-latest
-            msvc_arch: amd64_x86
-            cmake_args: ""
-            extension: ".exe"
-          - os: windows
-            arch: arm64
-            runner: windows-latest
-            msvc_arch: amd64_arm64
-            cmake_args: ""
-            extension: ".exe"
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-
-      - name: Install Linux 32-bit toolchain
-        if: matrix.os == 'linux' && matrix.arch == 'x86'
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y g++-multilib
-
-      - name: Configure MSVC
-        if: matrix.os == 'windows'
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: ${{ matrix.msvc_arch }}
-
-      - name: Build binary with CMake
-        shell: bash
-        run: |
-          mkdir -p dist
-          cmake --preset release ${{ matrix.cmake_args }}
-          cmake --build --preset release
-          cp "build/release/grocery${{ matrix.extension }}" "dist/grocery-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.extension }}"
-
-      - name: Package binary
-        shell: bash
-        run: |
-          archive="grocery-${{ matrix.os }}-${{ matrix.arch }}"
-          tar -czf "dist/${archive}.tar.gz" -C dist "grocery-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.extension }}"
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: grocery-${{ matrix.os }}-${{ matrix.arch }}
-          path: dist/grocery-${{ matrix.os }}-${{ matrix.arch }}.tar.gz
-          if-no-files-found: error
-
-  publish:
-    name: Publish GitHub release
-    if: startsWith(github.ref, 'refs/tags/') || inputs.publish_release == true
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: grocery-*
-          path: dist
-          merge-multiple: true
-
-      - name: Publish release assets
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*.tar.gz
-          generate_release_notes: true
-          tag_name: ${{ inputs.release_tag || format('build-{0}', github.run_number) }}
-          target_commitish: ${{ github.sha }}
+  release:
+    uses: ./.github/workflows/release-build.yml
+    with:
+      mode: app
+      publish_release: ${{ inputs.publish_release || false }}
+      release_tag: ${{ inputs.release_tag || '' }}

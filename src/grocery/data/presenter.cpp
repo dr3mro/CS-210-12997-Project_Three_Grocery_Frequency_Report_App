@@ -3,7 +3,7 @@
  * @brief Implements table, histogram, and lookup formatting.
  */
 
-#include "include/grocery/data/presenter.hpp"
+#include "grocery/data/presenter.hpp"
 
 #include <iomanip>
 #include <sstream>

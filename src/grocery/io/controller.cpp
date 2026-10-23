@@ -3,7 +3,7 @@
  * @brief Implements delegation between the file facade and stream helpers.
  */
 
-#include "include/grocery/io/controller.hpp"
+#include "grocery/io/controller.hpp"
 
 #include <iostream>
 

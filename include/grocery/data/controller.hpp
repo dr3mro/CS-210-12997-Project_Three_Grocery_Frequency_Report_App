@@ -5,10 +5,10 @@
  * @brief Public interface for coordinating grocery data operations.
  */
 
-#include "include/grocery/data/kvstore.hpp"
-#include "include/grocery/data/presenter.hpp"
-#include "include/grocery/data/serializer.hpp"
-#include "include/grocery/io/controller.hpp"
+#include "grocery/data/kvstore.hpp"
+#include "grocery/data/presenter.hpp"
+#include "grocery/data/serializer.hpp"
+#include "grocery/io/controller.hpp"
 namespace grocery::data
 {
     /**

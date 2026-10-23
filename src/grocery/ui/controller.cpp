@@ -3,7 +3,7 @@
  * @brief Implements menu construction, rendering, and input dispatch.
  */
 
-#include "include/grocery/ui/controller.hpp"
+#include "grocery/ui/controller.hpp"
 
 #include <iostream>
 #include <sstream>

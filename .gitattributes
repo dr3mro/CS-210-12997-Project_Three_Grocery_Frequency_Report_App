@@ -1,0 +1,20 @@
+# Everything else is text: git normalises the line endings on commit
+* text=auto
+
+# Shell and Perl scripts: they need LF line endings, also on Windows
+*.sh text eol=lf
+*.pl text eol=lf
+# cx is a bash script without an extension
+cx text eol=lf
+
+# Windows scripts: cmd.exe misparses LF-only batch files
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Visual Studio solutions and projects: Visual Studio writes and expects CRLF
+*.sln text eol=crlf
+*.vcxproj text eol=crlf
+*.props text eol=crlf
+*.targets text eol=crlf
+Directory.Build.props text eol=crlf

@@ -1,0 +1,47 @@
+# =============================================================================
+# src/CMakeLists.txt - the project's library
+#
+# Every .cpp under src/ goes into one library. The app (main.cpp), the tests,
+# the fuzzers and, in library mode, outside consumers all link it, so all real
+# code lives here and main() stays a thin entry point.
+#
+# Provides: ${PROJECT_NAME}_lib, plus the alias ${PROJECT_NAME}::${PROJECT_NAME}
+#           (the same name the installed package exports).
+# =============================================================================
+
+file(GLOB_RECURSE _grocery_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+add_library(${PROJECT_NAME}_lib ${_grocery_sources})
+
+# Lets a parent project that uses add_subdirectory()/FetchContent link
+# <name>::<name>, exactly as it would after find_package().
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME}_lib)
+
+# The C++ standard travels with the library: the app, tests, fuzzers and every
+# consumer of the installed package inherit it.
+target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
+
+# Public headers, as a file set: they are part of the target (IDEs list them),
+# their folders become the include directories (the source paths only inside
+# this build), and install(TARGETS ... FILE_SET HEADERS) installs them. The
+# generated headers (version.hpp and the export header, see ExportHeader.cmake)
+# are public too: a consumer of the library needs them.
+file(GLOB_RECURSE _grocery_public_headers CONFIGURE_DEPENDS
+     "${PROJECT_SOURCE_DIR}/include/*.hpp" "${PROJECT_SOURCE_DIR}/include/*.h")
+target_sources(${PROJECT_NAME}_lib PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS "${PROJECT_SOURCE_DIR}/include" "${GROCERY_GENERATED_INCLUDE_DIR}"
+    FILES ${_grocery_public_headers} "${GROCERY_VERSION_HEADER}")
+
+# Project-wide flags (warnings, sanitizers, hardening). PRIVATE on purpose:
+# they belong to this project, and a consumer that pulls the library in with
+# FetchContent or add_subdirectory() must not inherit them. Every target of
+# this project links ${PROJECT_NAME}_options itself.
+target_link_libraries(${PROJECT_NAME}_lib PRIVATE $<BUILD_INTERFACE:${PROJECT_NAME}_options>)
+
+# Refresh version.hpp (git hash) before the library compiles.
+add_dependencies(${PROJECT_NAME}_lib ${PROJECT_NAME}_version)
+
+# Third-party packages found in cmake/Dependencies.cmake are linked here, e.g.
+#   target_link_libraries(${PROJECT_NAME}_lib PUBLIC fmt::fmt)
+
+include(ExportHeader)

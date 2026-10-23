@@ -3,7 +3,7 @@
  * @brief Implements menu storage, display, and indexed lookup.
  */
 
-#include "include/grocery/ui/menu.hpp"
+#include "grocery/ui/menu.hpp"
 
 #include <iostream>
 

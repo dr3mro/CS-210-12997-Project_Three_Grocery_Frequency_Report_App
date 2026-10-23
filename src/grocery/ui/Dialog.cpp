@@ -3,7 +3,7 @@
  * @brief Implements item lookup, table, and histogram dialogs.
  */
 
-#include "include/grocery/ui/dialog.hpp"
+#include "grocery/ui/dialog.hpp"
 
 #include <cctype>
 #include <iostream>

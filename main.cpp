@@ -69,7 +69,10 @@
 
 #include "include/grocery/app/controller.hpp"
 
+#include <grocery/version.hpp>
+
 #include <iostream>
+#include <string_view>
 
 /**
  * @brief Starts the Grocery frequency-report application.
@@ -84,8 +87,14 @@
  * @return 0 when the application completes normally; 1 when an exception
  *         reaches the entry point.
  */
-int main()
+int main(int argc, char* argv[])
 {
+    if (argc > 1 && std::string_view(argv[1]) == "--version")
+    {
+        std::cout << "grocery " << grocery::kVersion << " (" << grocery::kGitHash << ")\n";
+        return 0;
+    }
+
     // Keep startup orchestration out of main; the controller owns that workflow.
     try
     {

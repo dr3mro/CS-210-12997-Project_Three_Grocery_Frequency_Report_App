@@ -1,0 +1,50 @@
+# =============================================================================
+# Version.cmake - the generated <name>/version.hpp header
+#
+# The header carries the project version (from the VERSION file) and the git
+# description of the build (git describe --tags --always --dirty).
+# It is written:
+#   - once at configure time, so clangd and clang-tidy find it right away, and
+#   - by the ${PROJECT_NAME}_version target when its inputs change.
+# Both paths use the same function in WriteVersion.cmake.
+#
+# Provides: target ${PROJECT_NAME}_version, GROCERY_VERSION_HEADER, and the
+#           generated include directory on ${PROJECT_NAME}_options.
+# =============================================================================
+include_guard(DIRECTORY)
+include(WriteVersion)
+
+set(GROCERY_GENERATED_INCLUDE_DIR "${PROJECT_BINARY_DIR}/generated/include")
+set(GROCERY_VERSION_HEADER "${GROCERY_GENERATED_INCLUDE_DIR}/${PROJECT_NAME}/version.hpp")
+set(_grocery_version_template "${PROJECT_SOURCE_DIR}/cmake/templates/version.hpp.in")
+
+# Configure time.
+grocery_write_version_header(
+    TEMPLATE "${_grocery_version_template}"
+    OUTPUT "${GROCERY_VERSION_HEADER}"
+    SOURCE_DIR "${PROJECT_SOURCE_DIR}")
+
+# Build time: the same function, run as a script when its inputs change.
+add_custom_command(
+    OUTPUT ${GROCERY_VERSION_HEADER}
+    COMMAND ${CMAKE_COMMAND}
+            -DTEMPLATE=${_grocery_version_template}
+            -DOUTPUT=${GROCERY_VERSION_HEADER}
+            -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
+            -DPROJECT_NAME=${PROJECT_NAME}
+            -DPROJECT_VERSION=${PROJECT_VERSION}
+            -DPROJECT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+            -DPROJECT_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+            -DPROJECT_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+            -P ${PROJECT_SOURCE_DIR}/cmake/WriteVersion.cmake
+    DEPENDS ${_grocery_version_template} ${PROJECT_SOURCE_DIR}/cmake/WriteVersion.cmake
+    COMMENT "Writing ${PROJECT_NAME}/version.hpp"
+    VERBATIM)
+add_custom_target(${PROJECT_NAME}_version DEPENDS ${GROCERY_VERSION_HEADER}
+    COMMENT "Updating ${PROJECT_NAME}/version.hpp")
+
+# The generated headers (version.hpp here, the export header from
+# ExportHeader.cmake) are public headers of the library: src/CMakeLists.txt
+# adds this folder to the library's PUBLIC include directories, so consumers
+# find them too. It is also what puts the -I flag into
+# compile_commands.json for clangd.

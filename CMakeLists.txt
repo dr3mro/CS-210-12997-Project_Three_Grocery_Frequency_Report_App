@@ -1,69 +1,118 @@
-cmake_minimum_required(VERSION 3.16)
+# =============================================================================
+# grocery - top-level build script
+#
+# This file only orchestrates. Every piece of build logic lives in a focused
+# module under cmake/ (each one starts with a comment saying what it does and
+# which options it reads) or in a subdirectory's CMakeLists.txt. Read top to
+# bottom, it is the order in which the build is set up:
+#
+#   1. Before project()    compiler choice, vcpkg toolchain, test feature
+#   2. Project             name and version (the version comes from the VERSION file)
+#   3. Options, defaults   every -DGROCERY_* switch; language and install defaults
+#   4. Build flags         the grocery_options target that every target links
+#   5. Dependencies        third-party packages (edit cmake/Dependencies.cmake)
+#   6. Targets             library (src/), app (main.cpp), tests, fuzzers
+#   7. Developer tools     coverage, clangd link, format, tidy, docs, distclean
+#   8. Install, summary    cmake --install / CPack, and a configure summary
+# =============================================================================
+cmake_minimum_required(VERSION 3.25)
 
-project(grocery LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Matches the Makefile: generate compile_commands.json for clangd and clang-tidy.
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+# An in-source build would overwrite the checked-in grocery.sln/grocery.vcxproj
+# (and litter the tree), so require a separate build folder: use a preset.
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR
+        "In-source builds are not supported. Use a preset, e.g.\n"
+        "  cmake --preset debug      (or vs2022 / vs2026 on Windows)\n"
+        "then remove the CMakeCache.txt and CMakeFiles/ just created here.")
 endif()
 
-# Flags copied from the Makefile for GCC/Clang; MSVC gets its equivalents.
-if(MSVC)
-    set(CMAKE_CXX_FLAGS_RELEASE "/O2")
-    set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Od")
-    add_compile_options(/W4)
-else()
-    set(CMAKE_CXX_FLAGS_RELEASE "-O2")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-    add_compile_options(-Wall -Wextra -pedantic)
+# ---- 1. Before project() ------------------------------------------------------
+# These must run before project() enables C++, so they are included by path.
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/Helpers.cmake)
+# Only the top-level project owns its build directory: when this project is
+# pulled into another one (add_subdirectory/FetchContent), the recorded source
+# is the parent's and the check would always fail.
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    grocery_validate_build_tree("${CMAKE_CURRENT_LIST_DIR}")
+endif()
+# The cx command passes its target architecture so it can tell when a build
+# folder must be reconfigured. Declaring it here keeps CMake from reporting it
+# as an unused -D variable.
+if(DEFINED CX_TARGET_ARCH)
+    set(CX_TARGET_ARCH "${CX_TARGET_ARCH}" CACHE STRING
+        "Target architecture recorded by the cx command")
+endif()
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/PreProject.cmake)
+
+# ---- 2. Project ---------------------------------------------------------------
+grocery_read_version(GROCERY_VERSION "${CMAKE_CURRENT_LIST_DIR}/VERSION")
+project(grocery
+    VERSION ${GROCERY_VERSION}
+    DESCRIPTION "C++ project created from the cpp-template"
+    LANGUAGES CXX)
+
+# From here on, modules are included by name: include(Warnings) loads
+# cmake/Warnings.cmake. PREPEND so ours win over same-named modules of a
+# parent project.
+list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+# ---- 3. Options and defaults ----------------------------------------------------
+include(Options)            # all -DGROCERY_* switches, with descriptions
+include(ProjectDefaults)    # C++ dialect, build type, PIC/PIE, install prefix
+
+# ---- 4. Build flags -------------------------------------------------------------
+# One INTERFACE target carries every project-wide compile and link flag. The
+# library links it PUBLIC (so the app, tests and fuzzers get it too) but only
+# inside this build: it is never part of the installed package.
+add_library(${PROJECT_NAME}_options INTERFACE)
+include(Warnings)           # -Wall -Wextra ... (and -Werror on request)
+include(Sanitizers)         # ASan/UBSan, TSan, MSan, libFuzzer instrumentation
+include(StdlibChecks)       # the standard library's own checks (Debug too)
+include(Hardening)          # stack protector, FORTIFY_SOURCE, RELRO, CET, ...
+include(Lto)                # link-time optimisation for optimised app builds
+include(Coverage)           # LLVM coverage instrumentation (coverage preset)
+include(Ccache)             # compiler cache
+include(Version)            # generated <name>/version.hpp (version + git hash)
+include(HomebrewLLVM)       # link Homebrew's libc++ with Homebrew's clang++
+include(WindowsClang)       # LLVM's clang against the Visual Studio STL (Windows)
+
+# ---- 5. Dependencies ------------------------------------------------------------
+include(FetchDependencies)   # grocery_fetch_dependency(): dependencies from source
+include(Dependencies)       # find_package() calls for third-party libraries
+
+# ---- 6. Targets -----------------------------------------------------------------
+add_subdirectory(src)       # ${PROJECT_NAME}_lib: all the real code
+
+# The app: a thin main() on top of the library. Library mode has no app.
+# It links ${PROJECT_NAME}_options itself: the project-wide flags belong to
+# this project and must not reach a consumer of the library.
+if(NOT GROCERY_LIBRARY_MODE)
+    add_executable(${PROJECT_NAME} main.cpp)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_lib ${PROJECT_NAME}_options)
 endif()
 
-file(GLOB_RECURSE GROCERY_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.cpp)
-
-add_executable(grocery main.cpp ${GROCERY_SOURCES})
-
-target_include_directories(grocery PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}
-)
-
-# Expose the compilation database at build/ so clangd finds it without a per-preset path.
-if(NOT WIN32)
-    file(REMOVE ${CMAKE_SOURCE_DIR}/build/compile_commands.json)
-    file(CREATE_LINK ${CMAKE_BINARY_DIR}/compile_commands.json
-         ${CMAKE_SOURCE_DIR}/build/compile_commands.json SYMBOLIC)
+if(GROCERY_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests) # ${PROJECT_NAME}_tests, registered with CTest
 endif()
 
-# ---- docs and diagrams ----
-find_program(DOXYGEN_EXECUTABLE doxygen)
-if(DOXYGEN_EXECUTABLE)
-    add_custom_target(docs
-        COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Generating documentation with Doxygen"
-    )
+if(GROCERY_BUILD_FUZZERS)
+    add_subdirectory(fuzz)  # one libFuzzer binary per fuzz/fuzz_*.cpp
 endif()
 
-find_program(DOT_EXECUTABLE dot)
-if(DOT_EXECUTABLE)
-    set(DIAGRAM_NAMES grocery_flowchart grocery_class_diagram)
-    set(DIAGRAM_PNGS "")
-    foreach(name IN LISTS DIAGRAM_NAMES)
-        set(dot_file ${CMAKE_SOURCE_DIR}/diagrams/${name}.dot)
-        set(png_file ${CMAKE_SOURCE_DIR}/diagrams/${name}.png)
-        add_custom_command(
-            OUTPUT ${png_file}
-            COMMAND ${DOT_EXECUTABLE} -Tpng ${dot_file} -o ${png_file}
-            DEPENDS ${dot_file}
-            COMMENT "Rendering ${name}.png"
-        )
-        list(APPEND DIAGRAM_PNGS ${png_file})
-    endforeach()
-    add_custom_target(diagrams DEPENDS ${DIAGRAM_PNGS})
+# ---- 7. Developer tools ---------------------------------------------------------
+# Only for the project being worked on: as a subproject, these generic target
+# names (format, docs, ...) would clash with the parent project's own.
+if(PROJECT_IS_TOP_LEVEL)
+    grocery_add_coverage_report() # `coverage` target (needs the tests)
+    include(CompileCommands)    # build/compile_commands.json for clangd
+    include(Format)             # `format` and `format-check` targets
+    include(CMakeLint)          # `cmake-lint` target
+    include(Tidy)               # `tidy` target
+    include(Docs)               # `docs` target, diagrams included
+    include(DistClean)          # `distclean` target
 endif()
+
+# ---- 8. Install and summary -----------------------------------------------------
+include(Install)            # cmake --install and CPack
+include(Summary)            # what this configure will build

@@ -3,10 +3,10 @@
  * @brief Implements application startup and workflow coordination.
  */
 
-#include "include/grocery/app/controller.hpp"
+#include "grocery/app/controller.hpp"
 
+#include "grocery/data/controller.hpp"
 #include "grocery/ui/controller.hpp"
-#include "include/grocery/data/controller.hpp"
 
 namespace grocery::app
 {

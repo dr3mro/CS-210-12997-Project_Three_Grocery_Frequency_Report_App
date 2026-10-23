@@ -1,3 +1,26 @@
 {
-  "format_on_save": "on"
+  "format_on_save": "on",
+  "languages": {
+    "C++": { "tab_size": 4 },
+  },
+  // "file_scan_exclusions": [
+  //   "**/build",
+  //   "**/cmake-build-*",
+  //   "**/docs",
+  //   "**/cx",
+  //   "**/cx.cmd",
+  //   "**/cx.ps1",
+  //   "**/*.sln",
+  //   "**/*.vcxproj",
+  //   "**/*.props",
+  //   "**/*.targets",
+  //   "**/cliff.toml",
+  //   "**/lychee.toml",
+  //   "**/examples",
+  //   "**/scripts",
+  //   "**/wiki",
+  //   "**/vcpkg_installed",
+  //   "*.md",
+  //   "Doxyfile*",
+  // ],
 }

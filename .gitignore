@@ -2,6 +2,11 @@
 /build/
 /bin/
 /obj/
+# vcpkg (in-tree) output
+/vcpkg_installed/
+/vcpkg-binary-cache/
+# Created by IDEs when editing presets
+CMakeUserPresets.json
 *.o
 *.obj
 *.d
@@ -12,8 +17,8 @@
 *.dll
 *.exe
 
-# Generated documentation
-
+# Generated documentation (includes docs/diagrams/)
+/docs/
 
 # Debugger and profiling output
 *.dSYM/
@@ -27,12 +32,16 @@
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
-!.vscode/c_cpp_properties.json
+!.vscode/extensions.json
 .vs/
 .idea/
 *.swp
 *.swo
-#zed
+# Visual Studio: the solution and the project are tracked, the rest is local
+*.vcxproj.user
+*.user.props
+*.suo
+# Zed / clangd
 .cache/
 compile_commands.json
 # macOS
@@ -41,7 +50,16 @@ compile_commands.json
 .LSOverride
 ._*
 
-# Temporary files
+# Temporary files (new-project-*.txt: the generator's output, if it was
+# interrupted before it could remove it)
+/new-project-*.txt
 *.tmp
 *.temp
 *~
+
+# libFuzzer findings (written to the directory the fuzzer runs in)
+crash-*
+leak-*
+timeout-*
+oom-*
+slow-unit-*

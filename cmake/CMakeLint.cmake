@@ -1,0 +1,34 @@
+# =============================================================================
+# CMakeLint.cmake - cmake-lint target
+#
+# cmake-lint reads .cmake-format.yaml from the source directory (100 columns,
+# the naming scheme and the complexity limits). It is only defined when the
+# tool is installed; otherwise a STATUS message explains how to install it.
+#
+# This is a module of its own, so that the target exists even when
+# clang-format is missing or too old (the format targets need clang-format
+# 21+, this one needs nothing but cmakelang).
+# =============================================================================
+include_guard(DIRECTORY)
+
+find_program(GROCERY_CMAKE_LINT cmake-lint)
+if(NOT GROCERY_CMAKE_LINT)
+    message(STATUS
+        "cmake-lint not found; install it with "
+        "'pipx install cmakelang==0.6.13 && pipx inject cmakelang pyyaml' "
+        "to enable the cmake-lint target")
+    return()
+endif()
+
+# This is an optional lint target, so its file discovery must not become a
+# configure dependency for Ninja's glob verifier.
+file(GLOB _grocery_cmake_files
+    "${PROJECT_SOURCE_DIR}/CMakeLists.txt"
+    "${PROJECT_SOURCE_DIR}/*/CMakeLists.txt"
+    "${PROJECT_SOURCE_DIR}/cmake/*.cmake"
+    "${PROJECT_SOURCE_DIR}/cmake/*.cmake.in")
+add_custom_target(cmake-lint
+    COMMAND "${GROCERY_CMAKE_LINT}" ${_grocery_cmake_files}
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+    COMMENT "Linting CMake files with cmake-lint"
+    VERBATIM)

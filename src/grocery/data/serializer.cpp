@@ -3,7 +3,7 @@
  * @brief Implements text serialization and deserialization.
  */
 
-#include "include/grocery/data/serializer.hpp"
+#include "grocery/data/serializer.hpp"
 
 #include <algorithm>
 #include <cctype>

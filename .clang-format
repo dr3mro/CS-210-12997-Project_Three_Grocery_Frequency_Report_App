@@ -1,4 +1,5 @@
-# clang-format rules for the Grocery project (matches the existing code style)
+# clang-format rules for the project (matches the existing code style)
+# Needs clang-format 21 or newer (Homebrew LLVM, or `pip install clang-format`).
 BasedOnStyle: Microsoft
 Language: Cpp
 Standard: c++17
@@ -33,17 +34,26 @@ ConstructorInitializerIndentWidth: 4
 # Templates
 AlwaysBreakTemplateDeclarations: Yes
 
-# Includes: keep project headers grouped, sorted case-sensitively
+# Includes: keep project headers grouped, sorted case-sensitively. The category
+# split is by the "/" in "<name/header.hpp>" rather than the literal project
+# name, so a generated project keeps the same order whatever it is called.
 SortIncludes:
   IgnoreCase: false
 IncludeBlocks: Regroup
+IncludeCategories:
+  # Project and path-style headers, e.g. <grocery/core/greeter.hpp>.
+  - Regex: '^[<"][^/>]+/.*'
+    Priority: 1
+  # Everything else: standard library and single-name third-party headers.
+  - Regex: '.*'
+    Priority: 2
 
 # Spacing
 SpaceBeforeParens: ControlStatements
 SpaceAfterCStyleCast: false
 SpaceInEmptyParentheses: false
 
-# Comments — do not reflow Doxygen blocks
+# Comments
 FixNamespaceComments: true
 SpacesBeforeTrailingComments: 1
 ReflowComments: Always

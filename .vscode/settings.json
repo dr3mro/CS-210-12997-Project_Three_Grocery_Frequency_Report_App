@@ -1,0 +1,34 @@
+{
+  "cmake.useCMakePresets": "always",
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "clangd.arguments": [
+    "--background-index",
+    "--clang-tidy"
+  ],
+  "files.exclude": {
+    "**/.*": true,
+    "**/.gitignore": true,
+    "**/.vscode": true,
+    "**/.git": true,
+    "**/.zed": true,
+    "**/.github": true,
+    "**/build": true,
+    "**/cmake-build-*": true,
+    "**/docs": true,
+    "**/cx": true,
+    "**/cx.cmd": true,
+    "**/cx.ps1": true,
+    "**/*.sln": true,
+    "**/*.vcxproj": true,
+    "**/*.props": true,
+    "**/*.targets": true,
+    "**/cliff.toml": true,
+    "**/lychee.toml": true,
+    "**/examples": true,
+    "**/scripts": true,
+    "**/wiki": true,
+    "**/vcpkg_installed": true,
+    "*.md": true,
+    "Doxyfile*": true
+  },
+}

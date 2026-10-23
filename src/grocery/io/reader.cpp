@@ -3,7 +3,7 @@
  * @brief Implements line-oriented text-file reading.
  */
 
-#include "include/grocery/io/reader.hpp"
+#include "grocery/io/reader.hpp"
 
 #include <fstream>
 #include <string>

@@ -3,7 +3,7 @@
  * @brief Implements the grocery data-operation facade.
  */
 
-#include "include/grocery/data/controller.hpp"
+#include "grocery/data/controller.hpp"
 
 namespace grocery::data
 {

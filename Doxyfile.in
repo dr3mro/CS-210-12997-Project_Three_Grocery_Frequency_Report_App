@@ -1,0 +1,30 @@
+# Doxygen configuration. CMake fills the @...@ values; run `cmake --workflow --preset docs`.
+# Only non-default settings are listed; run `doxygen -x` on the generated file to see everything.
+PROJECT_NAME           = "@PROJECT_NAME@"
+PROJECT_NUMBER         = "@PROJECT_VERSION@"
+PROJECT_BRIEF          = "C++ application"
+OUTPUT_DIRECTORY       = "@GROCERY_DOCS_DIR@"
+HTML_OUTPUT            = .
+# Every path is quoted: a project folder may contain spaces, and an unquoted
+# path would be split into two.
+INPUT                  = "@PROJECT_SOURCE_DIR@/include" "@PROJECT_SOURCE_DIR@/src" "@PROJECT_SOURCE_DIR@/README.md" "@PROJECT_SOURCE_DIR@/SECURITY.md" @GROCERY_DOXY_EXTRA_INPUT@
+USE_MDFILE_AS_MAINPAGE = "@PROJECT_SOURCE_DIR@/README.md"
+IMAGE_PATH             = "@GROCERY_DIAGRAMS_DIR@"
+STRIP_FROM_PATH        = "@PROJECT_SOURCE_DIR@"
+STRIP_FROM_INC_PATH    = "@PROJECT_SOURCE_DIR@/include"
+FILE_PATTERNS          = *.hpp *.cpp *.md
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */build/* */docs/* */.git/*
+EXTRACT_ALL            = YES
+BUILTIN_STL_SUPPORT    = YES
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_INCOMPLETE_DOC = YES
+GENERATE_LATEX         = NO
+GENERATE_TREEVIEW      = YES
+HTML_COLORSTYLE        = AUTO_LIGHT
+HTML_COLORSTYLE_HUE    = 220
+HTML_DYNAMIC_MENUS     = YES
+HAVE_DOT               = @GROCERY_DOXY_HAVE_DOT@
+UML_LOOK               = YES
+DOT_IMAGE_FORMAT       = svg

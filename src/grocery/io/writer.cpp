@@ -3,7 +3,7 @@
  * @brief Implements text-file output.
  */
 
-#include "include/grocery/io/writer.hpp"
+#include "grocery/io/writer.hpp"
 
 #include <fstream>
 

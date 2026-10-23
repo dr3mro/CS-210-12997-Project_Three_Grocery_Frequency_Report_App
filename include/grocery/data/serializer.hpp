@@ -5,7 +5,7 @@
  * @brief Public interface for converting grocery data to and from text.
  */
 
-#include "include/grocery/data/kvstore.hpp"
+#include "grocery/data/kvstore.hpp"
 
 #include <string>
 namespace grocery::data

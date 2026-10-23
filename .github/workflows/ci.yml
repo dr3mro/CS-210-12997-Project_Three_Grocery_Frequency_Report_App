@@ -1,0 +1,295 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new push to the same branch or pull request cancels the run it replaces.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg-binary-cache
+
+jobs:
+  build-and-test:
+    name: build-and-test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest, windows-11-arm]
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-vcpkg
+
+      - name: Configure MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+        with:
+          arch: ${{ contains(matrix.os, 'arm') && 'arm64' || 'x64' }}
+
+      # The ci presets add ASan/UBSan and turn warnings into errors. Linux
+      # builds with both GCC and Clang, since each warns about different
+      # things; macOS with Apple Clang.
+      - name: Install the Clang sanitizer runtimes (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libclang-rt-dev
+
+      - name: Build and test (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          for preset in ci-gcc ci-clang; do
+            echo "::group::$preset"
+            cmake --preset "$preset"
+            cmake --build --preset "$preset"
+            ctest --preset "$preset"
+            echo "::endgroup::"
+          done
+
+      - name: Build and test (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cmake --preset ci
+          cmake --build --preset ci
+          ctest --preset ci
+
+      # x64 and ARM64 alike: the developer shell above picked the architecture.
+      - name: Build and test (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cmake --preset release -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
+          cmake --build --preset release
+          ctest --preset release
+
+  msvc-asan:
+    name: MSVC + AddressSanitizer (windows-latest)
+    # The debug preset builds with ASan/UBSan on MSVC too. The ASan runtime
+    # DLL lives in the MSVC tools folder, which the developer shell puts on
+    # PATH, so the tests find it.
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-vcpkg
+
+      - name: Configure MSVC
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+
+      - name: Build and test with ASan
+        run: |
+          cmake --preset debug
+          if ($LASTEXITCODE -ne 0) { throw "cmake --preset debug failed" }
+          cmake --build --preset debug 2>&1 | Tee-Object -Variable log
+          if ($LASTEXITCODE -ne 0) { throw "the ASan build failed" }
+          # The ASan build must not have the run-time checks (/RTC1), and it
+          # must not let the compiler warn about overriding /Zi with /Z7
+          # (D9025): the debug information format is set properly instead.
+          if ($log -match 'D9025') {
+            throw "the compiler warned D9025 (overriding /Zi with /Z7) in the ASan build"
+          }
+          if ($log -match '/RTC1') {
+            throw "the ASan build still uses the run-time checks (/RTC1)"
+          }
+          ctest --preset debug
+
+  # MSVC + AddressSanitizer on windows-11-arm is deliberately not a job here:
+  # the MSVC ASan runtime for ARM64 is not part of every Visual Studio install,
+  # so the debug preset cannot be promised to link. CMake checks that (it
+  # compiles and links a test program) and stops with the fix; until the
+  # "C++ AddressSanitizer" component and the ARM64 build tools are installed,
+  # the debug-nosan preset is the one to use there. The windows-11-arm entry
+  # in build-and-test still builds and tests the release preset there; the x64
+  # msvc-asan job keeps the sanitizer itself covered.
+
+  vs-generator:
+    name: Visual Studio 2026 generator (windows-latest)
+    # The vs2026 preset: CMake finds MSVC through the Visual Studio generator,
+    # so no developer shell is set up here. The runner has Visual Studio 2026
+    # only, so the vs2022 preset is not tested in CI.
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-vcpkg
+      - name: Build and test with the vs2026 preset
+        run: |
+          cmake --preset vs2026 -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
+          if ($LASTEXITCODE -ne 0) { throw "cmake --preset vs2026 failed" }
+          cmake --build --preset vs2026
+          if ($LASTEXITCODE -ne 0) { throw "the vs2026 build failed" }
+          ctest --preset vs2026
+          if ($LASTEXITCODE -ne 0) { throw "the vs2026 tests failed" }
+
+  version:
+    name: version matches the VERSION file (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-vcpkg
+      - name: Compare the CMake project version with the VERSION file
+        # The VERSION file is the single source of truth; the configure-time
+        # version.hpp records the version project() actually received, so a
+        # hard-coded version in CMakeLists.txt (or a stale VERSION file) fails
+        # here.
+        run: |
+          cmake --preset debug-nosan -DGROCERY_BUILD_TESTS=OFF
+          version="$(head -n1 VERSION | tr -d '[:space:]')"
+          project="$(grep -o 'kVersion = "[^"]*"' build/Linux/debug-nosan/generated/include/grocery/version.hpp | sed 's/.*"\(.*\)"/\1/')"
+          echo "VERSION: '$version'  CMake project: '$project'"
+          if [ "$version" != "$project" ]; then
+            echo "::error::the VERSION file ($version) and the CMake project version ($project) disagree"
+            exit 1
+          fi
+
+  tsan:
+    name: thread sanitizer (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-vcpkg
+      - run: |
+          cmake --preset tsan
+          cmake --build --preset tsan
+          ctest --preset tsan
+
+  coverage:
+    name: coverage (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-vcpkg
+
+      - name: Install LLVM (for llvm-profdata/llvm-cov)
+        if: runner.os == 'Linux'
+        # libclang-rt provides the profile/sanitizer runtimes the runner does not
+        # guarantee; keep it in step with the clang version apt installs.
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y llvm libclang-rt-dev
+
+      - name: Generate coverage report
+        run: |
+          cmake --preset coverage
+          cmake --build --preset coverage
+          cmake --build --preset coverage --target coverage
+
+      - name: Upload coverage HTML
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-html-${{ matrix.os }}
+          path: build/${{ contains(matrix.os, 'macos') && 'Darwin' || 'Linux' }}/coverage/html
+          if-no-files-found: ignore
+
+  cmake-lint:
+    name: cmake-lint (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install cmakelang
+        # Pinned so CI and the pre-commit hook agree on the rules. PyYAML is
+        # imported by cmake-lint but not declared by cmakelang 0.6.13.
+        run: |
+          pipx install cmakelang==0.6.13
+          pipx inject cmakelang pyyaml
+      - name: Lint the CMake files
+        run: |
+          git ls-files -z 'CMakeLists.txt' '*.cmake' '*.cmake.in' \
+            | xargs -0 cmake-lint
+
+  tidy:
+    name: clang-tidy (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the pull-request check diffs against the base branch
+      - uses: ./.github/actions/setup-vcpkg
+      - name: Install clang-tidy
+        # clang-tidy itself is pinned through pipx, like clang-format, so CI
+        # and a local `pipx install clang-tidy==21.1.6` agree on the checks.
+        # apt only provides the run-clang-tidy and clang-tidy-diff scripts,
+        # which work with any clang-tidy they are given.
+        run: |
+          sudo apt-get update && sudo apt-get install --no-install-recommends -y clang-tidy
+          pipx install clang-tidy==21.1.6
+          # pipx installs into its own bin folder (/opt/pipx_bin on GitHub's
+          # runners, ~/.local/bin elsewhere), so ask it where that is.
+          clang_tidy="$(pipx environment --value PIPX_BIN_DIR)/clang-tidy"
+          "$clang_tidy" --version
+          echo "CLANG_TIDY=$clang_tidy" >> "$GITHUB_ENV"
+      - name: Configure
+        # GROCERY_TIDY_WERROR makes findings fail the build; .clang-tidy keeps
+        # warnings-as-errors off so editors still show them as warnings.
+        run: cmake --preset debug-nosan -DGROCERY_TIDY_WERROR=ON -DGROCERY_CLANG_TIDY="$CLANG_TIDY"
+
+      # A pull request is checked on the lines it changes only, which is quick
+      # and never fails on findings in code it did not touch.
+      - name: clang-tidy on the changed lines (pull requests)
+        if: github.event_name == 'pull_request'
+        run: |
+          cmake --build --preset debug-nosan --target grocery_version
+          git diff -U0 "origin/${{ github.base_ref }}...HEAD" -- '*.cpp' '*.hpp' '*.h' \
+            | clang-tidy-diff -p1 -path build/Linux/debug-nosan -clang-tidy-binary "$CLANG_TIDY" -quiet -j 0 \
+            | tee tidy.log
+          if grep -q ': warning:\|: error:' tidy.log; then
+            echo "::error::clang-tidy found problems in the changed lines (see above)"
+            exit 1
+          fi
+
+      - name: clang-tidy on every file (main)
+        if: github.event_name != 'pull_request'
+        run: cmake --build --preset debug-nosan --target tidy
+
+  fuzz:
+    name: fuzz (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-vcpkg
+      - name: Install LLVM (for a fuzzer-capable clang)
+        # libclang-rt provides the libFuzzer/ASan runtimes the runner does not
+        # guarantee.
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y llvm libclang-rt-dev
+      - name: Run fuzzers
+        run: |
+          cmake --preset fuzz -DGROCERY_FUZZ_SECONDS=30
+          cmake --build --preset fuzz
+          cmake --build --preset fuzz --target fuzz-run
+
+  format:
+    name: format (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-vcpkg
+      - name: Install clang-format (.clang-format needs v21+)
+        # Pinned to match the pre-commit hook rev, so CI and the local hook
+        # agree on formatting. Keep both in step.
+        run: pipx install clang-format==21.1.5
+      - name: Check formatting
+        # The format-check target owns the file list, so CI and a local run
+        # cannot drift apart. Tests are off, so doctest is not downloaded.
+        run: |
+          cmake --preset release -DGROCERY_BUILD_TESTS=OFF
+          cmake --build --preset release --target format-check

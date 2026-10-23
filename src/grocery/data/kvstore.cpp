@@ -3,7 +3,7 @@
  * @brief Implements the singleton grocery frequency store.
  */
 
-#include "include/grocery/data/kvstore.hpp"
+#include "grocery/data/kvstore.hpp"
 
 namespace grocery::data
 {
