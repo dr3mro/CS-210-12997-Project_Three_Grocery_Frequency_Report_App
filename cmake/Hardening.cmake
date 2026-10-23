@@ -32,12 +32,20 @@ set(_grocery_hardening_summary "")
 # other compiler in the processor name.
 string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _grocery_processor)
 string(TOLOWER "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}" _grocery_architecture_id)
+# The compiler's architecture ID names the target, so it wins whenever it is
+# set. CMAKE_SYSTEM_PROCESSOR names the host when cross-compiling (an x86
+# build on an x64 Windows runner reports AMD64), so it is only a fallback.
 set(_grocery_arch_x64 OFF)
 set(_grocery_arch_arm64 OFF)
-if(_grocery_architecture_id STREQUAL "x64" OR _grocery_processor MATCHES "^(amd64|x64)$")
+if(_grocery_architecture_id)
+    set(_grocery_target_arch "${_grocery_architecture_id}")
+else()
+    set(_grocery_target_arch "${_grocery_processor}")
+endif()
+if(_grocery_target_arch MATCHES "^(amd64|x64|x86_64)$")
     set(_grocery_arch_x64 ON)
 endif()
-if(_grocery_architecture_id STREQUAL "arm64" OR _grocery_processor MATCHES "^(arm64|aarch64)$")
+if(_grocery_target_arch MATCHES "^(arm64|aarch64)$")
     set(_grocery_arch_arm64 ON)
 endif()
 
