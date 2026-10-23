@@ -55,7 +55,7 @@ namespace grocery::ui
         if (index >= 0 && index < GetMenuItemCount())
         {
             // return a reference to the item at that position.
-            return &items.at(index);
+            return &items.at(static_cast<std::size_t>(index));
         }
         // Returning nullptr lets the caller report an invalid selection safely.
         std::cerr << "Index out of bounds: " << index << std::endl;

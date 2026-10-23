@@ -19,11 +19,11 @@ namespace grocery::ui
      * either lvalues or temporaries. Moving them into the object avoids an
      * unnecessary second allocation or copy.
      */
-    Item::Item(std::string text, std::function<void()> action)
+    Item::Item(std::string label, std::function<void()> callback)
         // Move the supplied values into their long-lived member variables.
         // The post-increment gives this item the current number, then reserves
         // the next number for the following item.
-        : text(std::move(text)), action(std::move(action)), index(nextIndex++)
+        : text(std::move(label)), action(std::move(callback)), index(nextIndex++)
     {
     }
 
