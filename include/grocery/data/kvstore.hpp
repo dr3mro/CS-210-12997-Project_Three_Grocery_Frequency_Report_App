@@ -12,6 +12,19 @@
 
 namespace grocery::data
 {
+    // c++20
+    // struct CaseInsensitiveCompare
+    // {
+    //     bool operator()(const std::string& left, const std::string& right) const
+    //     {
+    //         constexpr auto lower = [](unsigned char character)
+    //         {
+    //             return std::tolower(character);
+    //         };
+    //         return std::ranges::lexicographical_compare(left, right, std::ranges::less{}, lower, lower);
+    //     }
+    // };
+
     /** @brief Orders item names without considering letter case. */
     struct CaseInsensitiveCompare
     {
@@ -21,9 +34,12 @@ namespace grocery::data
             // instead of using std::tolower on the entire string, we use a lambda to
             // compare characters one by one. This avoids creating temporary strings and
             // is more efficient.
-            return std::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end(),
-                                                [](unsigned char leftCharacter, unsigned char rightCharacter)
-            { return std::tolower(leftCharacter) < std::tolower(rightCharacter); });
+            //
+            auto lower = [](unsigned char character, unsigned char otherCharacter)
+            {
+                return std::tolower(character) < std::tolower(otherCharacter);
+            };
+            return std::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end(), lower);
         }
     };
 
