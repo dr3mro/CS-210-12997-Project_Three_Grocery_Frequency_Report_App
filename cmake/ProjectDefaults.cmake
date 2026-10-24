@@ -8,9 +8,9 @@
 include_guard(DIRECTORY)
 
 # ---- language ------------------------------------------------------------------
-# The C++ standard itself is a property of the library target (cxx_std_17 in
+# The C++ standard itself is a property of the library target (cxx_std_20 in
 # src/CMakeLists.txt), so it travels to everything that links it. Here we only
-# ask for the standard dialect (-std=c++17, not -std=gnu++17).
+# ask for the standard dialect (-std=c++20, not -std=gnu++17).
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # compile_commands.json for clangd and clang-tidy (see CompileCommands.cmake).

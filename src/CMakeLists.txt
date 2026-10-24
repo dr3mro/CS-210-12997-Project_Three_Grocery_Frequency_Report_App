@@ -18,7 +18,7 @@ add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME}_lib)
 
 # The C++ standard travels with the library: the app, tests, fuzzers and every
 # consumer of the installed package inherit it.
-target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_20)
 
 # Public headers, as a file set: they are part of the target (IDEs list them),
 # their folders become the include directories (the source paths only inside

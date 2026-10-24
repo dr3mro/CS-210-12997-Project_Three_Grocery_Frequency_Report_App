@@ -20,7 +20,7 @@
  *
  * @section overview Overview
  *
- * Grocery Frequency Report is a C++17 console application for counting and
+ * Grocery Frequency Report is a C++20 console application for counting and
  * reviewing grocery item occurrences. The program reads one item per line from
  * `CS210_Project_Three_Input_File.txt`, stores the counts in memory, writes a
  * report to `frequency.dat`, and then opens an interactive menu.

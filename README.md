@@ -30,7 +30,7 @@ Every class and function has a Doxygen comment explaining what it does, and I us
 
 ---
 
-This C++17 console application reads grocery item records, counts item
+This C++20 console application reads grocery item records, counts item
 occurrences, writes a frequency report, and provides an interactive menu for
 searching and displaying the collected data.
 
@@ -48,7 +48,7 @@ searching and displaying the collected data.
 
 ## Requirements
 
-- A C++17-compatible compiler
+- A C++20-compatible compiler (GCC 10+, Clang 14+, or MSVC 19.29+ / Visual Studio 2019 16.11+)
 - CMake 3.25 or newer, used by the `./cx` helper
 - Doxygen for local documentation generation
 - GitHub Actions and GitHub Pages for automatic online documentation publishing
