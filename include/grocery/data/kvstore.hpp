@@ -13,35 +13,35 @@
 namespace grocery::data
 {
     // c++20
-    // struct CaseInsensitiveCompare
-    // {
-    //     bool operator()(const std::string& left, const std::string& right) const
-    //     {
-    //         constexpr auto lower = [](unsigned char character)
-    //         {
-    //             return std::tolower(character);
-    //         };
-    //         return std::ranges::lexicographical_compare(left, right, std::ranges::less{}, lower, lower);
-    //     }
-    // };
-
-    /** @brief Orders item names without considering letter case. */
     struct CaseInsensitiveCompare
     {
         bool operator()(const std::string& left, const std::string& right) const
         {
-            // Compare the two strings lexicographically, ignoring case.
-            // instead of using std::tolower on the entire string, we use a lambda to
-            // compare characters one by one. This avoids creating temporary strings and
-            // is more efficient.
-            //
-            auto lower = [](unsigned char character, unsigned char otherCharacter)
+            constexpr auto lower = [](unsigned char character)
             {
-                return std::tolower(character) < std::tolower(otherCharacter);
+                return std::tolower(character);
             };
-            return std::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end(), lower);
+            return std::ranges::lexicographical_compare(left, right, std::ranges::less{}, lower, lower);
         }
     };
+
+    /** @brief Orders item names without considering letter case. */
+    // struct CaseInsensitiveCompare
+    // {
+    //     bool operator()(const std::string& left, const std::string& right) const
+    //     {
+    //         // Compare the two strings lexicographically, ignoring case.
+    //         // instead of using std::tolower on the entire string, we use a lambda to
+    //         // compare characters one by one. This avoids creating temporary strings and
+    //         // is more efficient.
+    //         //
+    //         auto lower = [](unsigned char character, unsigned char otherCharacter)
+    //         {
+    //             return std::tolower(character) < std::tolower(otherCharacter);
+    //         };
+    //         return std::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end(), lower);
+    //     }
+    // };
 
     /** @brief Singleton map of grocery item names to occurrence counts. */
     class KVStore : public std::map<std::string, int, CaseInsensitiveCompare>
